@@ -39,15 +39,28 @@ Moving your data over
 
 Setting it up on SiteGround (GrowBig includes up to 5 Node.js apps)
 -------------------------------------------------------------------
-1. SiteGround Client Area > Websites > Node.js Projects > Add project.
-2. Choose manual upload, and upload a ZIP containing server.js and app.html.
-   (Or put both files in a private GitHub repository and connect it for automatic deploys.)
-3. Start command: node server.js   (SiteGround sets the PORT for you.)
-4. Assign a domain, for example app.anhservicesllc.com, and turn on the free SSL.
-5. Open the address. The first screen creates the owner account. Then open /admin to
+How it is set up now (Nov 2026):
+  Code:   GitHub, anhservicesllc/ah-company-app (private), branch main.
+  Host:   SiteGround Node.js project, test address https://rona28.sg-host.com
+  Deploy: every merge to main deploys automatically. SiteGround builds each deploy in a
+          new folder under public_html/.nodeapp/ and points "latest" at it.
+  Data:   ah-data/ at the site's top level (next to public_html), NOT inside the build
+          folder, so logins, records and photos survive every deploy. The server finds it
+          on its own; set AH_DATA in Site Tools > Node.js only to move it somewhere else.
+  Check:  https://<address>/api/health  ->  "ok":true, "users":true once the owner exists.
+
+To make a change: edit on a branch, open a pull request, merge to main. SiteGround redeploys
+within a minute or two. Nothing in ah-data is touched.
+
+Setting it up again from scratch:
+1. SiteGround Site Tools > Devs > Node.js > Create project, connect the GitHub repository,
+   branch main. package.json tells SiteGround to run "node server.js" (it sets the PORT).
+2. Use Node.js 18 or newer.
+3. Assign a domain, for example app.anhservicesllc.com, and turn on the free SSL.
+4. Open the address. The first screen creates the owner account. Then open /admin to
    add everyone else, and set their roles in the app under Price book > Team and roles.
-6. Turn on SiteGround's daily backups. Everything lives in the "data" folder next to
-   server.js: one small file per record, plus photos. Copy that folder to keep a backup.
+5. Turn on SiteGround's daily backups. Everything lives in the ah-data folder: one small
+   file per record, plus photos. Copy that folder to keep a backup.
 
 Running it on any computer (for a test or an emergency)
 -------------------------------------------------------
@@ -58,7 +71,7 @@ Safety notes
 ------------
 - Always use the https address (SSL) so passwords are protected.
 - Use passwords of 10+ characters. Admins can reset them on the Users page.
-- data/audit.log records sign-ins, saves, uploads and user changes, with who and when.
+- ah-data/audit.log (data/audit.log when run on a computer) records sign-ins, saves, uploads and user changes, with who and when.
 - Access rules match claude.ai: HR-style office records are admin-only, customers are
   readable by everyone and changed by admins, the team list is changed by admins.
 
@@ -71,5 +84,5 @@ AI FOR "FILL IT IN FOR ME" (optional)
     - Our own AI: run Ollama or LM Studio on an always-on office computer (16 GB+ memory; a graphics card helps),
       load a model (for example llama3.1), then on /admin choose "Our own AI", address http://<that computer>:11434/v1.
       No per-use cost, nothing leaves the office, but answers are less reliable than Claude's.
-  The owner sets this on /admin. The key stays on the server (data/ai.json) and never reaches a phone.
+  The owner sets this on /admin. The key stays on the server (ai.json in the data folder) and never reaches a phone.
   Needs Node 18 or newer.
