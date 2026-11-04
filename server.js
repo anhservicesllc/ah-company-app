@@ -15,7 +15,17 @@
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto'), url = require('url');
 
 const ROOT = __dirname;
-const DATA = process.env.AH_DATA || path.join(ROOT, 'data');
+/* Where the app keeps its data. AH_DATA wins if set. On SiteGround Node.js hosting each update deploys into a new
+   build folder under public_html/.nodeapp/, so data kept beside server.js would be lost on the next update; there it
+   goes to <site folder>/ah-data instead, outside public_html (not reachable from the web) and outside every build. */
+function dataDir() {
+  if (process.env.AH_DATA) return process.env.AH_DATA;
+  let real = ROOT; try { real = fs.realpathSync(ROOT); } catch (e) {}
+  const i = real.indexOf(path.sep + 'public_html' + path.sep + '.nodeapp' + path.sep);
+  if (i > 0) return path.join(real.slice(0, i), 'ah-data');
+  return path.join(ROOT, 'data');
+}
+const DATA = dataDir();
 const DBDIR = path.join(DATA, 'db'), BLOBS = path.join(DATA, 'blobs');
 const AI_F = path.join(DATA, 'ai.json');
 const USERS_F = path.join(DATA, 'users.json'), SESS_F = path.join(DATA, 'sessions.json'), LOG_F = path.join(DATA, 'audit.log');
