@@ -131,7 +131,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 const adminPage = (u, msg) => page('Users · A&H', `<h1>Users</h1><p class="note">Signed in as ${esc(u.name || u.email)} · <a href="./">Back to the app</a></p>${msg ? `<p class="err">${esc(msg)}</p>` : ''}
 <div class="box"><table><thead><tr><th>Name</th><th>Email</th><th>Access</th><th></th></tr></thead><tbody>${users.map(x => `<tr><td>${esc(x.name)}${x.owner ? ' (owner)' : ''}</td><td>${esc(x.email)}</td><td>${x.disabled ? '<span class="err">Turned off</span>' : x.admin ? 'Admin' : 'Member'}</td><td>${x.owner ? '' : `<form method="post" action="admin/user" style="display:flex;gap:6px;flex-wrap:wrap"><input type="hidden" name="id" value="${x.id}"><select name="do"><option value="">Change…</option><option value="admin">Make admin</option><option value="member">Make member</option><option value="off">Turn off (person leaves)</option><option value="on">Turn back on</option><option value="reset">Set new password</option></select><input name="password" type="password" placeholder="New password" style="width:9em"><button class="ghost">Apply</button></form>`}</td></tr>`).join('')}</tbody></table></div>
 <div class="box"><h2 style="font-size:1.05rem;margin-top:0">Add a person</h2><form method="post" action="admin/add"><label>Name<input name="name" required></label><label>Email<input name="email" type="email" required></label><label>Temporary password (10+ characters)<input name="password" type="password" minlength="10" required></label><label>Access<select name="admin"><option value="">Member (uses the app; roles set in the app's Team list)</option><option value="1">Admin (also manages users, customers, settings)</option></select></label><button>Add</button></form>
-<p class="note">Turning someone off signs them out everywhere at once. Their past work stays in the app.</p></div>${aiBox(u)}`);
+<p class="note">Turning someone off signs them out everywhere at once. Their past work stays in the app.</p></div>${aiBox(u)}${mailBox(u)}`);
 const form = b => Object.fromEntries(new URLSearchParams(b.toString('utf8')));
 const redirect = (res, to) => { res.writeHead(303, { Location: to, 'Cache-Control': 'no-store' }); res.end(); };
 
@@ -160,6 +160,47 @@ async function aiAsk(prompt) {
   throw Object.assign(new Error('AI is not set up'), { code: 501 });
 }
 const aiBox = u => { const c = aiConf(); return `<div class="box"><h2 style="font-size:1.05rem;margin-top:0">AI for "Fill it in for me"</h2><p class="note">Status: ${aiOn() ? 'on (' + esc(c.provider === 'anthropic' ? 'Claude API' : 'own / OpenAI-compatible AI') + ', ' + esc(c.model) + ')' : 'off: the app uses its built-in reader'}.</p>${u.owner ? `<form method="post" action="admin/ai"><label>Which AI<select name="provider"><option value=""${!c.provider ? ' selected' : ''}>Off (built-in reader only)</option><option value="anthropic"${c.provider === 'anthropic' ? ' selected' : ''}>Claude API (Anthropic)</option><option value="openai"${c.provider === 'openai' ? ' selected' : ''}>Our own AI or another OpenAI-compatible service</option></select></label><label>Address (own AI only, e.g. http://office-pc:11434/v1)<input name="url" value="${esc(c.url)}"></label><label>Model (e.g. claude-haiku-5-5, or llama3.1 on your own AI)<input name="model" value="${esc(c.model)}"></label><label>API key ${c.key ? '(saved; leave blank to keep it)' : ''}<input name="key" type="password" autocomplete="off"></label><button type="submit">Save AI settings</button></form>` : '<p class="note">Only the owner can change this.</p>'}</div>`; };
+
+
+/* ---------- training export by email ----------
+   claude.ai's scheduled tasks can't reach this server, so once a day (after 3 pm Mountain) the server emails its
+   training records (training + trmiles collections, plus the names of the people in them) as JSON to the A&H office
+   inbox. The daily "training milestones and archive" task reads that email, sends the milestone emails and keeps the
+   Drive training archive, the same as for records on claude.ai. Owner sets the outgoing mailbox on /admin. */
+const MAIL_F = path.join(DATA, 'mail.json'), EXP_F = path.join(DATA, 'export.json');
+function mailConf() { const f = readJSON(MAIL_F, {}); return { host: f.host || process.env.AH_SMTP_HOST || '', port: +(f.port || process.env.AH_SMTP_PORT || 465), user: f.user || process.env.AH_SMTP_USER || '', pass: f.pass || process.env.AH_SMTP_PASS || '', from: f.from || process.env.AH_SMTP_FROM || f.user || process.env.AH_SMTP_USER || '', to: f.to || process.env.AH_EXPORT_TO || 'info@anhservicesllc.com' }; }
+const mailOn = () => { const c = mailConf(); return !!(c.host && c.user && c.pass && c.to); };
+function smtpSend({ subject, text }) {
+  const c = mailConf(), tls = require('tls');
+  return new Promise((ok, bad) => {
+    const sock = tls.connect({ host: c.host, port: c.port, servername: c.host, rejectUnauthorized: process.env.AH_SMTP_INSECURE !== '1' });
+    let buf = '', step = 0; const t = setTimeout(() => { sock.destroy(); bad(new Error('mail server timed out')); }, 30000);
+    const b64 = x => Buffer.from(x, 'utf8').toString('base64');
+    const msg = [`From: A&H company server <${c.from}>`, `To: ${c.to}`, `Subject: ${subject}`, `Date: ${new Date().toUTCString()}`, `Message-ID: <${id(12)}@ah-company-server>`, 'MIME-Version: 1.0', 'Content-Type: text/plain; charset=utf-8', 'Content-Transfer-Encoding: base64', '', b64(text).replace(/.{1,76}/g, '$&\r\n')].join('\r\n');
+    const steps = [[220, 'EHLO ah-company-server'], [250, 'AUTH LOGIN'], [334, b64(c.user)], [334, b64(c.pass)], [235, `MAIL FROM:<${c.from}>`], [250, `RCPT TO:<${c.to}>`], [250, 'DATA'], [354, msg + '\r\n.'], [250, 'QUIT']];
+    sock.on('data', d => { buf += d.toString('utf8'); let i; while ((i = buf.indexOf('\r\n')) >= 0) { const line = buf.slice(0, i); buf = buf.slice(i + 2); if (/^\d{3}-/.test(line)) continue; const code = +line.slice(0, 3);
+      if (step >= steps.length) { clearTimeout(t); sock.end(); return ok(); }
+      const [want, cmd] = steps[step]; if (code !== want) { clearTimeout(t); sock.destroy(); return bad(new Error(`mail server said: ${step === 4 ? 'login failed' : line.slice(0, 120)}`)); }
+      sock.write(cmd + '\r\n'); step++; } });
+    sock.on('error', e => { clearTimeout(t); bad(e); });
+  });
+}
+const mtDate = d => new Date(d.getTime() - 7 * 3600e3).toISOString().slice(0, 10);
+async function exportTraining(force, who) {
+  const st = readJSON(EXP_F, {});
+  const training = listCol(['training']).map(x => ({ id: x.id, ...x.data })), trmiles = listCol(['trmiles']).map(x => ({ id: x.id, ...x.data }));
+  const uids = new Set([...training, ...trmiles].map(x => x.uid).concat(training.map(x => x.sign && x.sign.by)).filter(Boolean));
+  const names = {}; users.filter(u => uids.has(u.id)).forEach(u => { names[u.id] = u.name || ''; });
+  const body = { kind: 'ah-training-export', v: 1, from: 'app.anhservicesllc.com', at: new Date().toISOString(), names, training, trmiles };
+  const hash = crypto.createHash('sha256').update(JSON.stringify({ names, training, trmiles })).digest('hex');
+  if (!force && (hash === st.hash || (!training.length && !trmiles.length))) { writeJSON(EXP_F, { ...st, checked: body.at }); return 'nothing new'; }
+  try { await smtpSend({ subject: `A&H server training export ${mtDate(new Date())}`, text: JSON.stringify(body) });
+    writeJSON(EXP_F, { ...st, hash, sentAt: body.at, checked: body.at, err: '', count: training.length + trmiles.length }); audit(who || 'server', `training export sent (${training.length} records, ${trmiles.length} milestones)`); return 'sent';
+  } catch (e) { writeJSON(EXP_F, { ...st, checked: body.at, err: String(e.message || e).slice(0, 200), errAt: body.at }); audit(who || 'server', 'training export failed: ' + e.message); throw e; }
+}
+setInterval(() => { if (!mailOn()) return; const now = new Date(), st = readJSON(EXP_F, {}); const mtHour = (now.getUTCHours() + 24 - 7) % 24;
+  if (mtHour >= 15 && (!st.checked || mtDate(new Date(st.checked)) !== mtDate(now))) exportTraining(false).catch(() => {}); }, 15 * 60e3).unref();
+const mailBox = u => { const c = mailConf(), st = readJSON(EXP_F, {}); return `<div class="box"><h2 style="font-size:1.05rem;margin-top:0">Training updates to the office</h2><p class="note">Once a day after 3 pm the server emails new training progress to ${esc(c.to)}, so milestone emails and the Drive training archive include people who train here. Status: ${mailOn() ? 'on' : 'off: set the outgoing mailbox below'}${st.sentAt ? ' · last sent ' + esc(st.sentAt.slice(0, 16).replace('T', ' ')) + ' UTC' : ''}${st.err ? ` · <span class="err">last try failed: ${esc(st.err)}</span>` : ''}.</p>${u.owner ? `<form method="post" action="admin/mail"><label>Mail server (SiteGround: Site Tools > Email > Accounts > Mail configuration)<input name="host" value="${esc(c.host)}" placeholder="e.g. mail.anhservicesllc.com"></label><label>Port (SSL)<input name="port" value="${esc(String(c.port))}"></label><label>Mailbox login (email address)<input name="user" value="${esc(c.user)}"></label><label>Mailbox password ${c.pass ? '(saved; leave blank to keep it)' : ''}<input name="pass" type="password" autocomplete="off"></label><label>Send to<input name="to" value="${esc(c.to)}"></label><button type="submit">Save mail settings</button></form>${mailOn() ? '<form method="post" action="admin/export" style="margin-top:8px"><button class="ghost">Send training update now</button></form>' : ''}` : '<p class="note">Only the owner can change this.</p>'}</div>`; };
 
 /* ---------- router ---------- */
 const server = http.createServer(async (req, res) => {
@@ -204,7 +245,18 @@ const server = http.createServer(async (req, res) => {
       if (!me || !me.owner) return send(res, 403, 'Owner only');
       const f = form(await readBody(req, 1e5)), old = readJSON(AI_F, {}), prov = ['anthropic', 'openai'].includes(f.provider) ? f.provider : '';
       writeJSON(AI_F, { provider: prov, url: String(f.url || '').trim().slice(0, 300), model: String(f.model || '').trim().slice(0, 100), key: String(f.key || '').trim() || old.key || '' });
-      audit(who, 'ai settings ' + (prov || 'off')); return redirect(res, 'admin?m=' + encodeURIComponent('AI settings saved'));
+      audit(who, 'ai settings ' + (prov || 'off')); return redirect(res, '../admin?m=' + encodeURIComponent('AI settings saved'));
+    }
+    if (p === '/admin/mail' && req.method === 'POST') {
+      if (!me || !me.owner) return send(res, 403, 'Owner only');
+      const f = form(await readBody(req, 1e5)), old = readJSON(MAIL_F, {});
+      writeJSON(MAIL_F, { host: String(f.host || '').trim().slice(0, 200), port: +f.port || 465, user: String(f.user || '').trim().slice(0, 200), pass: String(f.pass || '').trim() || old.pass || '', from: String(f.user || '').trim().slice(0, 200), to: String(f.to || '').trim().slice(0, 200) || 'info@anhservicesllc.com' });
+      audit(who, 'mail settings saved'); return redirect(res, '../admin?m=' + encodeURIComponent('Mail settings saved'));
+    }
+    if (p === '/admin/export' && req.method === 'POST') {
+      if (!me || !me.owner) return send(res, 403, 'Owner only');
+      let m; try { m = await exportTraining(true, who) === 'sent' ? 'Training update sent.' : 'Nothing to send.'; } catch (e) { m = 'Could not send: ' + e.message; }
+      return redirect(res, '../admin?m=' + encodeURIComponent(m));
     }
     if (p === '/admin/user' && req.method === 'POST') {
       if (!me || !me.admin) return send(res, 403, 'Admins only');
