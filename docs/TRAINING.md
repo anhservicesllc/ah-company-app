@@ -5,8 +5,15 @@ The course books are Claude Docs; the app holds the quizzes, field tasks, sign-o
 | Academy | Constant | Courses | Course book |
 |---|---|---|---|
 | Project Manager Academy | `TRN_PM` | 17 (PM-101…116, PM-190) | https://claude.ai/artifact/3KT7gomfVNFtCpDFxrUWyo |
-| Cabinet Academy | `TRN_CAB` | 17 (CAB-101…116, CAB-190) | https://claude.ai/artifact/9CLgrSQe6qKP8ZYNr8aZbD |
+| Cabinet Academy | MT-106 + `TRN_CAB` | 18 (MT-106, CAB-101…116, CAB-190) | https://claude.ai/artifact/9CLgrSQe6qKP8ZYNr8aZbD |
 | Estimating Academy | `TRN_EST` | 18 (EST-101…117, EST-190) | https://claude.ai/artifact/4w5sjtvAX6TX8KoqmgWvWS |
+| Measure Tech Academy | `TRN_MT` | 10 (MT-101…109, MT-190) | being written |
+| Carpenter Academy | `TRN_CAR_A` = MT-107, MT-108 + `TRN_CAR` | 11 | being written |
+| Tile Setter Academy | `TRN_TIL_A` = MT-102, MT-103 + `TRN_TIL` | 13 | being written |
+| LVT & Vinyl Flooring Academy | `TRN_FLR_A` = MT-102, MT-105 + `TRN_FLR` | 11 | being written |
+| Shower Pan & Bath Tile Academy | `TRN_SHW_A` = MT-104 + `TRN_SHW` | 12 | being written |
+
+**Shared measuring courses:** each MT course also sits in its trade academy (and MT-106 in the Cabinet Academy). It's the same course code, so one sign-off counts in both. `trnAll()` lists each course once for records and logs. Milestones for the new academies (`<id>1`, `<id>half`, `<id>all`) come from `TR_GEN`; `trMsAc(key)` maps a milestone key to its academy.
 
 `TRN` lists the academies. Entries with `soon: 1` (Office, Safety, Field) show as "being built".
 
