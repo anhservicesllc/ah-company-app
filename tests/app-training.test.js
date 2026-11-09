@@ -13,7 +13,7 @@ test('academies have the right courses and valid quiz questions', async () => {
   const by = Object.fromEntries(r.map(a => [a.id, a]));
   assert.equal(by.pm.n, 17); assert.equal(by.cab.n, 18, 'Cabinet + the shared cabinet measuring course'); assert.equal(by.est.n, 18);
   assert.equal(by.mt.n, 10); assert.equal(by.car.n, 11); assert.equal(by.til.n, 13); assert.equal(by.flr.n, 11); assert.equal(by.shw.n, 12);
-  for (const a of r) { assert.deepEqual(a.bad, [], a.id + ' has bad questions'); assert.equal(a.dup, 0, a.id + ' duplicate codes'); if (a.doc || ['pm', 'cab', 'est'].includes(a.id)) assert.match(a.doc, /^https:\/\/claude\.ai\/artifact\//); }
+  for (const a of r) { assert.deepEqual(a.bad, [], a.id + ' has bad questions'); assert.equal(a.dup, 0, a.id + ' duplicate codes'); assert.match(a.doc, /^https:\/\/claude\.ai\/artifact\//); }
   await app.close();
 });
 
