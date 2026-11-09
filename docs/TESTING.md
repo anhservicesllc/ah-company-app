@@ -25,6 +25,7 @@ GitHub runs `npm test` on every pull request and every push to `main` (`.github/
 | `app-rules.test.js` | Nevada deposit warning; estimator self-approval only under $5,000 and at target margin; the approve button for senior only |
 | `app-training.test.js` | Course counts and valid questions for every academy; PM levels; Cabinet and Estimating milestones; quiz pass/fail and logging; sign-off rules |
 | `app-voice.test.js` | Reading phone, spoken email, address, city, ZIP, name, price and day; new estimate by voice (customer, intake, work); jobs without an estimate (emergency/insurance, phone price with the Nevada reminder and proposal, program vs. service); daily log and change order by voice |
+| `app-crews.test.js` | Spreadsheet paste keeps only safe columns; making a handyman crew and putting it on a job; crew said by voice; read-only for field crews; phone job rows fit and open the job; preview scrolls as a page |
 | `app-smoke.test.js` | Every tab opens with no JavaScript error, on desktop and phone, for every role; the test estimate opens for every role |
 | `server.test.js` | Owner setup and second-setup refusal; sign-in; signed-out requests refused; save, merge, list and delete; access rules; bad paths; admin-only pages; the daily training email, including a wrong mailbox password |
 

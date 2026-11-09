@@ -68,6 +68,20 @@ Start from **Job board → + Job without an estimate**: by voice, or by tapping 
 - **Job numbers:** they come from the line: Remodel 40, Service 100, Home Depot 10, Steel 90.
 - **Nevada contracts:** Nevada residential jobs (not program or steel) show a reminder that work over $1,000 needs a signed written contract. The **Make a proposal to sign** button starts an estimate from the job (`fromJob`), with the work filled in from what was said.
 
+## Employees and crews
+
+**Job board → Employees & crews.** Office, estimators and senior estimators can edit; everyone else sees the list read-only.
+
+- **Employees** (`staff`): loaded from the Master Employee List (active rows only). New hires: **+ Add employee**, or paste rows from the spreadsheet (only ID, name, position, department, type and active are read). Link an employee to their app sign-in so their crew's jobs show first at clock-in.
+- **Crews** (`crews`): **+ Handyman crew** or **+ Other crew**, tick who's on it, pick a lead.
+- **On a job:** the job file and the job screen have a **Crew** picker. Picking a crew copies its people onto the job; **Change who's on this job** adds or removes one person. The job keeps name snapshots (`crewName`, `staffIds`, `staffNames`, `staffLead`) so field crews see who's on it, and `crew` (sign-ins) keeps the time clock working.
+- **By voice:** "send the handyman crew", a crew's name, or an employee's full name in a job-without-an-estimate note assigns them.
+
+## Phones
+
+- The job board opens on the list on phones: one tappable row per job (job #, step, name, line, date, contract, crew). Tap it to open the job.
+- Previews (proposals, invoices) open as a normal page that scrolls top to bottom; **Close** goes back.
+
 ## Jobs after signing
 
 Jobs, the schedule, the time clock, daily logs, change orders (`coreqs`), orders, job costs, punch, warranty, closeout packets and invoices all hang off the job number. The Money tab rolls up revenue, cost and profit, and flags "Losing money" when job costs pass the price.
