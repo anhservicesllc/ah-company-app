@@ -37,6 +37,8 @@ Records are JSON documents in collections. Paths alternate between collection an
 | `costs` | job cost entry | Actual costs for job profit |
 | `warranty` | warranty or service call | |
 | `subs` | sub or vendor company | Contacts, vendor packet status, insurance and license dates, paperwork requests (vendor task) |
+| `staff` | employee | Name, employee ID, position, department, type (Full-time, Part-time, Seasonal, Subcontractor), active, optional app sign-in (`uid`). **No phone, email, address or pay** |
+| `crews` | crew | Name, type (Handyman, Remodel, …), `members` (staff ids), `lead`, active |
 | `actuals` | actual-hours record | Feeds the "actual vs. estimate" averages |
 | `training` | person + course (`<uid>__<course>`) | Quiz best, tries, passed, field task, sign-off, log (see TRAINING.md) |
 | `classes` | live training class | Date, place, seats, sign-ups, attendance |

@@ -29,6 +29,8 @@ Known problems and their fixes. **Add a row whenever you fix something new:** sy
 | Nov 7, 2026 | Admin page "AI settings saved" went to a wrong URL (`/admin/admin`) | Relative redirect | Redirect to `../admin` (PR #7) | `server.test.js` |
 | Nov 9, 2026 | Admin page mail login failed; AI fields held the owner's Gmail login | Chrome autofilled saved logins into settings fields | `autocomplete="new-password"/"off"` on those fields (PR #9) | — |
 | Nov 9, 2026 | Jobs entered without an estimate got the Home Depot job-number channel | `chForJob` only knew Steel and Home Depot | Channel by line: Remodel 40, Service 100 (v86) | `app-voice.test.js` |
+| Nov 9, 2026 | Job list hard to read on phones; words and dropdowns cut off | 9-column table squeezed into stacked cards with no side padding | Phone rows that open the job; padding on stacked tables (v87) | `app-crews.test.js` |
+| Nov 9, 2026 | Couldn't see the whole proposal preview on a phone | Fixed overlay with its own scroll area, cut off inside claude.ai | Preview is part of the page and scrolls normally (v87) | `app-crews.test.js` |
 | Nov 9, 2026 | Cloud tasks can't read server data | Network allowlist blocks the server | Server emails a daily training export (PR #7) | `server.test.js` "daily training email" |
 
 ## Where to look in the code
