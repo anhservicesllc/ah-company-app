@@ -10,6 +10,8 @@ Known problems and their fixes. **Add a row whenever you fix something new:** sy
 | Logins gone after an update | Data must be in `ah-data/` at the site's top level, not in the build folder (`dataDir()`). Fixed in PR #3 |
 | Someone can't save quizzes or records on claude.ai | They're a Viewer or Commenter. Outside people can't be more, so have them train on the company server |
 | Badge says "Demo · this browser only" | No database found: opened from a file or another host, or the claude.ai `db` capability failed. Nothing is shared in this mode |
+| 🎤 Talk button missing | The browser has no speech recognition or blocked the microphone. Use the 🎤 on the phone keyboard instead; the box works the same |
+| Voice fill missed something | It only fills what it can read with confidence. With AI off (server /admin) it uses the simpler built-in reader. Fill the rest by hand |
 | Wrong role options in "Working as" | The Team list (`office/private/team`) controls them. When it's empty, anyone can pick any role |
 | Milestone emails missing for server trainees | Server /admin "Training updates to the office": status on, no error. Then search Gmail for `subject:"A&H server training export"` |
 | A price looks wrong | Line flags (*Below market* usually means a missing cost); `cfg.book` for that code; the scope's tier and adjustments; `marginOf(e)`; minimum job (PRICING.md) |
@@ -25,6 +27,8 @@ Known problems and their fixes. **Add a row whenever you fix something new:** sy
 | Nov 4, 2026 | Data would vanish on each deploy | Each deploy is a new build folder | `dataDir()` puts data in `<site>/ah-data` (PR #3) | `server.test.js` "data stays outside the app folder" |
 | Nov 7, 2026 | Field crews couldn't be given write access on claude.ai | Outside people only get Viewer or Commenter | Train on the company server | — |
 | Nov 7, 2026 | Admin page "AI settings saved" went to a wrong URL (`/admin/admin`) | Relative redirect | Redirect to `../admin` (PR #7) | `server.test.js` |
+| Nov 9, 2026 | Admin page mail login failed; AI fields held the owner's Gmail login | Chrome autofilled saved logins into settings fields | `autocomplete="new-password"/"off"` on those fields (PR #9) | — |
+| Nov 9, 2026 | Jobs entered without an estimate got the Home Depot job-number channel | `chForJob` only knew Steel and Home Depot | Channel by line: Remodel 40, Service 100 (v86) | `app-voice.test.js` |
 | Nov 9, 2026 | Cloud tasks can't read server data | Network allowlist blocks the server | Server emails a daily training export (PR #7) | `server.test.js` "daily training email" |
 
 ## Where to look in the code

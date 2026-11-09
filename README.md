@@ -10,6 +10,6 @@ Private code for the A&H Services LLC / A&H Construction LLC company app: estima
 | `docs/` | Developer reference: architecture, data model, pricing, training, server, automations, testing, release steps, troubleshooting. Start at [docs/README.md](docs/README.md). |
 | `tests/` | Automated tests. `npm test` runs them; GitHub runs them on every pull request. See [docs/TESTING.md](docs/TESTING.md). |
 
-**Current version:** claude.ai app Version 85.
+**Current version:** claude.ai app Version 86.
 
 **How changes are made:** every change follows the A&H App Manual (Merge, Maintenance and Development): request on the change log, build, test, Ron approves, release, record. Nothing is pushed here without Ron's approval. Never commit passwords, keys, customer data or backups to this repository.
