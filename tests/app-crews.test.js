@@ -63,11 +63,33 @@ test('saying "handyman crew" assigns it to a new job', async () => {
   await app.close();
 });
 
-test('field crew sees employees and crews read-only', async () => {
+test('field crew can\'t open the employee list; it lives under Time for office', async () => {
   const app = await openApp({ seed: jobsSeed(), role: 'crew', admin: false });
   await app.page.evaluate(() => go('people')); await app.page.waitForTimeout(300);
-  const h = await app.page.$eval('#screen', e => e.innerHTML);
-  assert.match(h, /Pat Example/); assert.doesNotMatch(h, /data-crnew|data-stnew|data-pplimport/);
+  assert.notEqual(await app.page.evaluate(() => screen), 'people');
+  assert.doesNotMatch(await app.page.$eval('#screen', e => e.innerHTML), /Pat Example/);
+  await app.setRole('office'); await app.page.evaluate(() => go('time')); await app.page.waitForTimeout(300);
+  await app.page.click('[data-tview="emp"]'); await app.page.waitForTimeout(300);
+  assert.match(await app.page.$eval('#screen', e => e.innerHTML), /Pat Example/);
+  await app.page.click('[data-empsel="AHS-T-1"]'); await app.page.waitForTimeout(300);
+  assert.match(await app.page.$eval('#screen', e => e.innerText), /time card/i);
+  assert.deepEqual(app.errors, []);
+  await app.close();
+});
+
+test('tabs by role: Money and Subs & vendors are office only by default, and Settings can change it', async () => {
+  const app = await openApp({ role: 'crew', admin: false });
+  const vis = () => app.page.$$eval('#tabs [data-v]', b => b.filter(x => !x.hidden).map(x => x.dataset.v));
+  let v = await vis();
+  assert.ok(!v.includes('money') && !v.includes('vendors') && !v.includes('home'), v.join(','));
+  assert.ok(v.includes('time') && v.includes('board'));
+  await app.page.evaluate(() => go('money')); await app.page.waitForTimeout(200);
+  assert.notEqual(await app.page.evaluate(() => screen), 'money', 'crew sent away from Money');
+  await app.setRole('senior'); assert.ok(!(await vis()).includes('money'));
+  await app.setRole('office'); v = await vis(); assert.ok(v.includes('money') && v.includes('vendors'));
+  await app.page.evaluate(() => { cfg.tabRoles = { ...TAB_ROLES0, money: ['office', 'senior'] }; renderScreen(); });
+  await app.setRole('senior'); assert.ok((await vis()).includes('money'));
+  assert.deepEqual(app.errors, []);
   await app.close();
 });
 
@@ -95,6 +117,21 @@ test('phone: a preview is a normal scrolling page and close returns to the app',
   assert.ok(r.on); assert.equal(r.main, 'none'); assert.ok(r.docH > 1500, 'the page itself scrolls through the whole proposal');
   await p.click('[data-pvclose]'); await p.waitForTimeout(200);
   assert.equal(await p.evaluate(() => getComputedStyle(document.querySelector('main')).display), 'block');
+  assert.deepEqual(app.errors, []);
+  await app.close();
+});
+
+test('home profile saves as you type and has Save / Done buttons', async () => {
+  const app = await openApp({ seed: defaultSeed({ 'homes/H-1001': { address: '', city: '', state: 'NV', zip: '', systems: [{ name: 'Water heater', type: '', year: '', condition: '' }], photos: [], todo: [], finishes: [] } }), viewport: PHONE, role: 'office' });
+  const p = app.page;
+  await p.evaluate(() => { window._hid = 'H-1001'; go('home1'); }); await p.waitForTimeout(300);
+  await p.fill('[data-hf="address"]', '100 Test Street'); await p.waitForTimeout(1000);
+  assert.equal(await p.evaluate(() => window.__store.get('homes/H-1001').address), '100 Test Street', 'saved without leaving the field');
+  assert.match(await p.textContent('#homeSaved'), /Saved/);
+  await p.fill('[data-hf="city"]', 'Henderson');
+  await p.click('[data-homedone]'); await p.waitForTimeout(400);
+  assert.equal(await p.evaluate(() => window.__store.get('homes/H-1001').city), 'Henderson');
+  assert.equal(await p.evaluate(() => screen), 'homes');
   assert.deepEqual(app.errors, []);
   await app.close();
 });

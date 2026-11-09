@@ -70,16 +70,26 @@ Start from **Job board → + Job without an estimate**: by voice, or by tapping 
 
 ## Employees and crews
 
-**Job board → Employees & crews.** Office, estimators and senior estimators can edit; everyone else sees the list read-only.
+**Time → Employees** (Office and Senior estimator only). Tap an employee to see their time card for the week, the last 4 weeks, their crew and open jobs, and approve a submitted week. **Manage employees & crews** opens the editing screen (also on the Job board for those roles). Field crews don't see the list; they see who's on each job.
 
 - **Employees** (`staff`): loaded from the Master Employee List (active rows only). New hires: **+ Add employee**, or paste rows from the spreadsheet (only ID, name, position, department, type and active are read). Link an employee to their app sign-in so their crew's jobs show first at clock-in.
 - **Crews** (`crews`): **+ Handyman crew** or **+ Other crew**, tick who's on it, pick a lead.
 - **On a job:** the job file and the job screen have a **Crew** picker. Picking a crew copies its people onto the job; **Change who's on this job** adds or removes one person. The job keeps name snapshots (`crewName`, `staffIds`, `staffNames`, `staffLead`) so field crews see who's on it, and `crew` (sign-ins) keeps the time clock working.
 - **By voice:** "send the handyman crew", a crew's name, or an employee's full name in a job-without-an-estimate note assigns them.
 
+## Tabs by role
+
+Each role sees only its tabs (`cfg.tabRoles`, set in **Price book → Settings → Tabs each role sees**; defaults in `TAB_ROLES0`). Money and Subs & vendors start as Office only. Opening a hidden tab's screen sends the person to their first allowed tab. This keeps screens simple; it is not a security lock (the database access rules are).
+
+## Accounts
+
+Loaded Nov 9, 2026 with no jobs: Home Depot, Renaissance Maintenance Inc., Chrysalis, The Brokerage, United Field Services, R&O Construction, KSCO Investments LLC, APE Legacy Transport, Capital Steel. Terms, rates and response times are blank until the office fills them in.
+
 ## Phones
 
 - The job board opens on the list on phones: one tappable row per job (job #, step, name, line, date, contract, crew). Tap it to open the job.
+- Every photo button has a 📷 camera choice and a 🖼 gallery choice.
+- Forms save as you type; a background refresh no longer redraws a screen while someone is typing or tapping (`_lastEdit`, `_ptrDown`).
 - Previews (proposals, invoices) open as a normal page that scrolls top to bottom; **Close** goes back.
 
 ## Jobs after signing

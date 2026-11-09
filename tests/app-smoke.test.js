@@ -6,7 +6,7 @@ const { openApp, closeBrowser } = require('./lib/harness');
 after(closeBrowser);
 
 for (const [label, viewport] of [['desktop', { width: 1440, height: 900 }], ['phone', { width: 390, height: 844 }]]) {
-  for (const role of ['tech', 'est', 'senior', 'office']) {
+  for (const role of ['tech', 'est', 'senior', 'office', 'crew']) {
     test(`all tabs open (${label}, ${role})`, async () => {
       const app = await openApp({ viewport, role });
       const tabs = await app.page.$$eval('#tabs [data-v]', b => b.filter(x => x.offsetParent !== null || getComputedStyle(x).display !== 'none').map(x => x.dataset.v));
