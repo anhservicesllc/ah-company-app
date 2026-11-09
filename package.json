@@ -1,13 +1,15 @@
 {
-  "name": "ah-company-app",
-  "version": "83.0.0",
-  "description": "A&H company app and company server",
-  "private": true,
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "engines": {
-    "node": ">=18"
-  }
+ "name": "ah-company-app",
+ "version": "85.0.0",
+ "description": "A&H company app and company server",
+ "private": true,
+ "main": "server.js",
+ "scripts": {
+  "start": "node server.js",
+  "test": "node --test --test-concurrency=1 tests/*.test.js",
+  "test:server": "node --test tests/server.test.js"
+ },
+ "engines": {
+  "node": ">=18"
+ }
 }

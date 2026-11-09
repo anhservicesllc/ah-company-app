@@ -1,0 +1,3583 @@
+{
+  "bigJob": 25000,
+  "book": {
+    "APP-ALLOW": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 install guides; Las Vegas norms",
+        "hi": 1,
+        "k": 1,
+        "lo": 1,
+        "was": [
+          1.87,
+          1.87,
+          1.87
+        ]
+      },
+      "hrs": 0,
+      "mat": [
+        1,
+        1,
+        1
+      ],
+      "name": "Appliance package A&H supplies",
+      "src": "Market allowance Oct 31, 2026: pass-through of the appliance package A&H buys",
+      "unit": "$",
+      "waste": 0
+    },
+    "APP-ELEC": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 install guides; Las Vegas norms",
+        "hi": 800,
+        "k": 0.907,
+        "lo": 300,
+        "was": [
+          531.72,
+          606.47,
+          718.58
+        ]
+      },
+      "hrs": 2.721,
+      "mat": [
+        108.83,
+        145.1,
+        199.52
+      ],
+      "name": "New dedicated circuit",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $300–$800 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "APP-GAS": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 install guides; Las Vegas norms",
+        "hi": 250,
+        "k": 0.938,
+        "lo": 100,
+        "was": [
+          167.9,
+          186.58,
+          214.61
+        ]
+      },
+      "hrs": 0.938,
+      "mat": [
+        32.83,
+        42.21,
+        56.28
+      ],
+      "name": "Gas connection and leak test",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$250 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "APP-HAUL": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 install guides; Las Vegas norms",
+        "hi": 125,
+        "k": 0.868,
+        "lo": 50,
+        "was": [
+          97.96,
+          97.96,
+          97.96
+        ]
+      },
+      "hrs": 0.434,
+      "mat": [
+        21.69,
+        21.69,
+        21.69
+      ],
+      "name": "Haul away old appliance",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $50–$125 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "APP-INST": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 install guides; Las Vegas norms",
+        "hi": 300,
+        "k": 0.916,
+        "lo": 100,
+        "was": [
+          181.78,
+          191.12,
+          209.81
+        ]
+      },
+      "hrs": 1.373,
+      "mat": [
+        13.73,
+        18.31,
+        27.47
+      ],
+      "name": "Install and connect appliance",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$300 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "BATH-DEMO": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 45,
+        "k": 1.064,
+        "lo": 20,
+        "was": [
+          28.19,
+          28.19,
+          28.19
+        ]
+      },
+      "hrs": 0.266,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Bathroom demo + haul",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $20–$45 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "BATH-FAN": {
+      "hrs": 1.5,
+      "mat": [
+        60,
+        125,
+        220
+      ],
+      "name": "Exhaust fan replaced",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0
+    },
+    "BATH-ROUGH": {
+      "hrs": 2,
+      "mat": [
+        47,
+        55,
+        75
+      ],
+      "name": "Plumbing reconnect per fixture",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0
+    },
+    "BATH-TOILET": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 700,
+        "k": 0.684,
+        "lo": 400,
+        "was": [
+          505.46,
+          767.06,
+          1196.82
+        ]
+      },
+      "hrs": 1.027,
+      "mat": [
+        123.2,
+        219.02,
+        376.44
+      ],
+      "name": "Toilet installed",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $400–$700 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "BATH-TUB": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 4500,
+        "k": 0.933,
+        "lo": 1500,
+        "was": [
+          1517.34,
+          2358.18,
+          4039.86
+        ]
+      },
+      "hrs": 5.598,
+      "mat": [
+        419.82,
+        839.63,
+        1679.26
+      ],
+      "name": "Tub or shower unit installed",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $1,500–$4,500 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "BATH-VAN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 800,
+        "k": 0.75,
+        "lo": 300,
+        "was": [
+          471.64,
+          733.23,
+          1162.99
+        ]
+      },
+      "hrs": 0.9,
+      "mat": [
+        135.02,
+        240.03,
+        412.56
+      ],
+      "name": "Vanity + top installed",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $300–$800 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "CAB-BASE": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National cabinet install guides, Las Vegas norms",
+        "hi": 650,
+        "k": 0.758,
+        "lo": 200,
+        "was": [
+          406.59,
+          593.44,
+          892.41
+        ]
+      },
+      "hrs": 0.758,
+      "mat": [
+        121.33,
+        197.16,
+        318.48
+      ],
+      "name": "Base cabinets installed",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $200–$650 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "CAB-CRN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National cabinet install guides, Las Vegas norms",
+        "hi": 35,
+        "k": 0.767,
+        "lo": 15,
+        "was": [
+          26.42,
+          32.59,
+          44.92
+        ]
+      },
+      "hrs": 0.115,
+      "mat": [
+        3.84,
+        6.14,
+        10.74
+      ],
+      "name": "Cabinet crown",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $15–$35 per lin ft",
+      "unit": "lin ft",
+      "waste": 0.1
+    },
+    "CAB-DEMO": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National cabinet install guides, Las Vegas norms",
+        "hi": 40,
+        "k": 0.558,
+        "lo": 15,
+        "was": [
+          53.81,
+          53.81,
+          53.81
+        ]
+      },
+      "hrs": 0.279,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Remove cabinets",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $15–$40 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "CAB-TALL": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National cabinet install guides, Las Vegas norms",
+        "hi": 2500,
+        "k": 0.898,
+        "lo": 1000,
+        "was": [
+          1109.9,
+          1670.46,
+          2511.3
+        ]
+      },
+      "hrs": 2.245,
+      "mat": [
+        404.08,
+        673.47,
+        1077.55
+      ],
+      "name": "Tall / pantry cabinet",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $1,000–$2,500 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "CAB-UPPER": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National cabinet install guides, Las Vegas norms",
+        "hi": 500,
+        "k": 0.761,
+        "lo": 175,
+        "was": [
+          310.32,
+          459.81,
+          702.72
+        ]
+      },
+      "hrs": 0.609,
+      "mat": [
+        91.34,
+        152.24,
+        251.19
+      ],
+      "name": "Upper cabinets installed",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $175–$500 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "CAR-BLOCK": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 100,
+        "k": 1,
+        "lo": 40,
+        "was": [
+          56.31,
+          60.05,
+          63.79
+        ]
+      },
+      "hrs": 0.4,
+      "mat": [
+        6,
+        8,
+        10
+      ],
+      "name": "Blocking",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $40–$100 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "CAR-HEAD": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 3500,
+        "k": 1.177,
+        "lo": 1000,
+        "was": [
+          1012.84,
+          1274.43,
+          1797.62
+        ]
+      },
+      "hrs": 7.062,
+      "mat": [
+        211.86,
+        376.64,
+        706.2
+      ],
+      "name": "Header or beam (engineered if load-bearing)",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $1,000–$3,500 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "CAR-INS": {
+      "hrs": 0.015,
+      "mat": [
+        0.7,
+        1.03,
+        1.56
+      ],
+      "name": "Insulation",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "CAR-SOFF": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 60,
+        "k": 0.726,
+        "lo": 25,
+        "was": [
+          60.11,
+          61.98,
+          63.85
+        ]
+      },
+      "hrs": 0.363,
+      "mat": [
+        1.45,
+        2.18,
+        2.9
+      ],
+      "name": "Remove soffit and patch",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $25–$60 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "CAR-SUB": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 15,
+        "k": 0.812,
+        "lo": 6,
+        "was": [
+          13.54,
+          14.78,
+          16.21
+        ]
+      },
+      "hrs": 0.065,
+      "mat": [
+        1.79,
+        2.27,
+        2.84
+      ],
+      "name": "Subfloor repair / replace",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $6–$15 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "CON-CUT": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "2026 concrete guides; Las Vegas norms",
+        "hi": 100,
+        "k": 0.845,
+        "lo": 40,
+        "was": [
+          72.82,
+          76.93,
+          81.04
+        ]
+      },
+      "hrs": 0.422,
+      "mat": [
+        6.76,
+        8.45,
+        10.14
+      ],
+      "name": "Slab cut, remove and patch",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $40–$100 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "CON-FLAT": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "2026 concrete guides; Las Vegas norms",
+        "hi": 15,
+        "k": 1.042,
+        "lo": 8,
+        "was": [
+          8.59,
+          9.6,
+          13.03
+        ]
+      },
+      "hrs": 0.036,
+      "mat": [
+        2.4,
+        2.92,
+        4.69
+      ],
+      "name": "Concrete flatwork, 4 in",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $8–$15 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.08
+    },
+    "CON-TRENCH": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "2026 concrete guides; Las Vegas norms",
+        "hi": 40,
+        "k": 0.551,
+        "lo": 15,
+        "was": [
+          52.57,
+          54.44,
+          56.31
+        ]
+      },
+      "hrs": 0.22,
+      "mat": [
+        2.2,
+        2.76,
+        3.31
+      ],
+      "name": "Trench and backfill",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $15–$40 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "CP-BOX": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Cabinet painting guides, Las Vegas norms",
+        "hi": 15,
+        "k": 1,
+        "lo": 8,
+        "was": [
+          12.19,
+          12.56,
+          13.13
+        ]
+      },
+      "hrs": 0.12,
+      "mat": [
+        0.6,
+        0.8,
+        1.1
+      ],
+      "name": "Paint face frames and ends",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $8–$15 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "CP-DOOR": {
+      "hrs": 2.2,
+      "mat": [
+        8,
+        7,
+        14
+      ],
+      "name": "Paint cabinet door, both sides",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0
+    },
+    "CP-DRW": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Cabinet painting guides, Las Vegas norms",
+        "hi": 120,
+        "k": 0.738,
+        "lo": 60,
+        "was": [
+          99.72,
+          101.59,
+          105.33
+        ]
+      },
+      "hrs": 0.738,
+      "mat": [
+        2.95,
+        3.69,
+        5.17
+      ],
+      "name": "Paint drawer front",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $60–$120 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-BB": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 120,
+        "k": 0.523,
+        "lo": 40,
+        "was": [
+          101.43,
+          143.29,
+          227
+        ]
+      },
+      "hrs": 0.131,
+      "mat": [
+        18.32,
+        28.79,
+        49.72
+      ],
+      "name": "Butcher block / wood countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $40–$120 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.12
+    },
+    "CT-BENCH": {
+      "hrs": 0,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Stone shower bench top",
+      "src": "Supplier quote: RTS Marble & Granite slab bench top $250 (Oct 1, 2026)",
+      "sub": [
+        250,
+        250,
+        250
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-CM": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 90,
+        "k": 0.678,
+        "lo": 40,
+        "was": [
+          78.57,
+          103.24,
+          140.24
+        ]
+      },
+      "hrs": 0.102,
+      "mat": [
+        20.34,
+        28.48,
+        40.68
+      ],
+      "name": "Cultured marble countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $40–$90 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "CT-CON": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 135,
+        "k": 0.48,
+        "lo": 65,
+        "was": [
+          177.7,
+          229.09,
+          321.58
+        ]
+      },
+      "hrs": 0.144,
+      "mat": [
+        33.61,
+        45.62,
+        67.22
+      ],
+      "name": "Concrete countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $65–$135 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "CT-COOK": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 200,
+        "k": 0.517,
+        "lo": 100,
+        "was": [
+          243.23,
+          289.94,
+          336.66
+        ]
+      },
+      "hrs": 0.259,
+      "mat": [
+        51.73,
+        64.67,
+        77.6
+      ],
+      "name": "Cooktop cutout",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$200 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-CUT": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 300,
+        "k": 0.512,
+        "lo": 150,
+        "was": [
+          393.03,
+          439.74,
+          533.17
+        ]
+      },
+      "hrs": 0.512,
+      "mat": [
+        76.75,
+        89.54,
+        115.12
+      ],
+      "name": "Sink cutout and polish",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $150–$300 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-EDGE": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 50,
+        "k": 1,
+        "lo": 10,
+        "was": [
+          16.34,
+          20.07,
+          27.55
+        ]
+      },
+      "hrs": 0.05,
+      "mat": [
+        6,
+        8,
+        12
+      ],
+      "name": "Bullnose edge upgrade",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $10–$50 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "CT-EDGE-PREM": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 60,
+        "k": 0.63,
+        "lo": 20,
+        "was": [
+          56.48,
+          71.43,
+          99.46
+        ]
+      },
+      "hrs": 0.094,
+      "mat": [
+        13.86,
+        18.9,
+        28.35
+      ],
+      "name": "Premium edge (miter, waterfall, bevel, ogee)",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $20–$60 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "CT-EDGE-STD": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 5,
+        "k": 1,
+        "lo": 0,
+        "was": [
+          2.26,
+          2.26,
+          2.26
+        ]
+      },
+      "hrs": 0.02,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Standard eased edge (included)",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $0–$5 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "CT-FAU": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 50,
+        "k": 0.719,
+        "lo": 20,
+        "was": [
+          39.3,
+          48.65,
+          57.99
+        ]
+      },
+      "hrs": 0.072,
+      "mat": [
+        10.79,
+        14.39,
+        17.99
+      ],
+      "name": "Faucet / accessory hole",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $20–$50 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-FSPL": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 125,
+        "k": 0.573,
+        "lo": 50,
+        "was": [
+          124.88,
+          157.12,
+          221.58
+        ]
+      },
+      "hrs": 0.143,
+      "mat": [
+        25.78,
+        34.37,
+        51.55
+      ],
+      "name": "Full-height stone backsplash",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $50–$125 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.15
+    },
+    "CT-GRN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 100,
+        "k": 0.569,
+        "lo": 45,
+        "was": [
+          102.07,
+          123,
+          189.97
+        ]
+      },
+      "hrs": 0.114,
+      "mat": [
+        21.63,
+        27.32,
+        45.53
+      ],
+      "name": "Granite countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $45–$100 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.12
+    },
+    "CT-ISINK": {
+      "hrs": 0,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Integrated stone sink (fabricated)",
+      "src": "Supplier quote: RTS Marble & Granite integrated slab sink $1,100 (Oct 1, 2026)",
+      "sub": [
+        1100,
+        1100,
+        1100
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-LAM": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 65,
+        "k": 0.544,
+        "lo": 25,
+        "was": [
+          62.13,
+          82.68,
+          109.4
+        ]
+      },
+      "hrs": 0.082,
+      "mat": [
+        11.97,
+        17.42,
+        24.49
+      ],
+      "name": "Laminate countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $25–$65 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "CT-MRB": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 200,
+        "k": 0.546,
+        "lo": 75,
+        "was": [
+          164.48,
+          228.94,
+          368.62
+        ]
+      },
+      "hrs": 0.12,
+      "mat": [
+        35.49,
+        51.87,
+        87.36
+      ],
+      "name": "Marble countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $75–$200 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.15
+    },
+    "CT-PRC": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 150,
+        "k": 0.501,
+        "lo": 60,
+        "was": [
+          175.22,
+          239.69,
+          347.13
+        ]
+      },
+      "hrs": 0.11,
+      "mat": [
+        35.05,
+        50.06,
+        75.1
+      ],
+      "name": "Porcelain / sintered stone (Dekton, Neolith) countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $60–$150 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.15
+    },
+    "CT-QTZ": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 125,
+        "k": 0.558,
+        "lo": 60,
+        "was": [
+          123,
+          152.3,
+          221.36
+        ]
+      },
+      "hrs": 0.112,
+      "mat": [
+        26.79,
+        34.6,
+        53.02
+      ],
+      "name": "Quartz (engineered stone) countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $60–$125 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.12
+    },
+    "CT-QZT": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 250,
+        "k": 0.559,
+        "lo": 100,
+        "was": [
+          185.97,
+          250.43,
+          390.1
+        ]
+      },
+      "hrs": 0.123,
+      "mat": [
+        41.93,
+        58.7,
+        95.04
+      ],
+      "name": "Quartzite countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$250 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.15
+    },
+    "CT-RCY": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 150,
+        "k": 0.526,
+        "lo": 60,
+        "was": [
+          137.65,
+          189.97,
+          252.75
+        ]
+      },
+      "hrs": 0.105,
+      "mat": [
+        28.95,
+        42.11,
+        57.9
+      ],
+      "name": "Recycled glass or paper composite (Richlite) countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $60–$150 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.12
+    },
+    "CT-REM": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 8,
+        "k": 0.665,
+        "lo": 3,
+        "was": [
+          9.02,
+          9.02,
+          9.02
+        ]
+      },
+      "hrs": 0.053,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Remove old countertops",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $3–$8 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "CT-SHELF": {
+      "hrs": 0,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Stone niche shelf",
+      "src": "Supplier quote: RTS Marble & Granite slab niche shelving $200 (Oct 1, 2026)",
+      "sub": [
+        200,
+        200,
+        200
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-SINK": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 200,
+        "k": 1.478,
+        "lo": 100,
+        "was": [
+          84.56,
+          84.56,
+          84.56
+        ]
+      },
+      "hrs": 1.109,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Undermount sink mounting",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$200 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-SINKUP": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 1500,
+        "k": 0.683,
+        "lo": 500,
+        "was": [
+          756.49,
+          1317.05,
+          2157.89
+        ]
+      },
+      "hrs": 0.683,
+      "mat": [
+        239.17,
+        444.17,
+        751.68
+      ],
+      "name": "Sink upgrade (farmhouse / workstation)",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $500–$1,500 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-SOAP": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 200,
+        "k": 0.55,
+        "lo": 70,
+        "was": [
+          175.22,
+          218.2,
+          282.66
+        ]
+      },
+      "hrs": 0.121,
+      "mat": [
+        38.5,
+        49.5,
+        65.99
+      ],
+      "name": "Soapstone countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $70–$200 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.15
+    },
+    "CT-SPL": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 40,
+        "k": 0.531,
+        "lo": 15,
+        "was": [
+          35.94,
+          56.49,
+          83.21
+        ]
+      },
+      "hrs": 0.053,
+      "mat": [
+        6.37,
+        11.68,
+        18.59
+      ],
+      "name": "4-inch backsplash",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $15–$40 per lin ft",
+      "unit": "lin ft",
+      "waste": 0.1
+    },
+    "CT-SS": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 150,
+        "k": 0.643,
+        "lo": 50,
+        "was": [
+          112.79,
+          147.73,
+          195
+        ]
+      },
+      "hrs": 0.116,
+      "mat": [
+        28.94,
+        39.87,
+        54.66
+      ],
+      "name": "Solid surface (Corian, Hi-Macs, Swanstone) countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $50–$150 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "CT-SST": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 200,
+        "k": 0.569,
+        "lo": 100,
+        "was": [
+          185.14,
+          263.62,
+          381.34
+        ]
+      },
+      "hrs": 0.142,
+      "mat": [
+        45.52,
+        68.28,
+        102.42
+      ],
+      "name": "Stainless steel countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$200 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.05
+    },
+    "CT-SUP": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 150,
+        "k": 0.628,
+        "lo": 60,
+        "was": [
+          121.77,
+          159.14,
+          215.2
+        ]
+      },
+      "hrs": 0.314,
+      "mat": [
+        21.99,
+        34.56,
+        53.41
+      ],
+      "name": "Overhang support bracket",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $60–$150 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-TILE": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 75,
+        "k": 0.482,
+        "lo": 25,
+        "was": [
+          82.16,
+          103.65,
+          138.03
+        ]
+      },
+      "hrs": 0.241,
+      "mat": [
+        5.79,
+        10.61,
+        18.33
+      ],
+      "name": "Tile (ceramic or porcelain) countertop",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $25–$75 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.15
+    },
+    "CT-TOP": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 110,
+        "k": 0.539,
+        "lo": 40,
+        "was": [
+          74.46,
+          129.96,
+          191.62
+        ]
+      },
+      "hrs": 0.081,
+      "mat": [
+        15.08,
+        29.62,
+        45.78
+      ],
+      "name": "Countertop installed (laminate / prefab quartz / custom quartz)",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $40–$110 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "CT-VCUST": {
+      "hrs": 0,
+      "mat": [
+        1500,
+        1500,
+        1500
+      ],
+      "name": "Custom stone vanity top, fabricated and installed (1 slab included)",
+      "src": "Supplier quote: RTS Marble & Granite (Oct 1, 2026): vanity fabrication and install $750–1,000; slab $1,500",
+      "sub": [
+        750,
+        875,
+        1000
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-VTOP": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 900,
+        "k": 0.802,
+        "lo": 300,
+        "was": [
+          393.35,
+          654.94,
+          1066.02
+        ]
+      },
+      "hrs": 1.202,
+      "mat": [
+        96.19,
+        208.42,
+        384.77
+      ],
+      "name": "Prefab vanity top with sink (cultured marble / quartz)",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $300–$900 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "CT-WF": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Inch Calculator 2026 installed $/sq ft by material; Las Vegas fabricator norms",
+        "hi": 2500,
+        "k": 0.841,
+        "lo": 1000,
+        "was": [
+          1291.84,
+          1665.55,
+          2132.68
+        ]
+      },
+      "hrs": 3.362,
+      "mat": [
+        378.25,
+        546.37,
+        756.51
+      ],
+      "name": "Waterfall end (mitered)",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $1,000–$2,500 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "DW-HANG": {
+      "hrs": 0.03,
+      "mat": [
+        0.54,
+        0.83,
+        0.9
+      ],
+      "name": "Hang, tape, finish drywall",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "DW-PATCH-L": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 450,
+        "k": 1.563,
+        "lo": 200,
+        "was": [
+          168.48,
+          175.96,
+          187.17
+        ]
+      },
+      "hrs": 2.344,
+      "mat": [
+        18.75,
+        25.01,
+        34.38
+      ],
+      "name": "Large patch",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $200–$450 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "DW-PATCH-S": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 125,
+        "k": 1.603,
+        "lo": 60,
+        "was": [
+          54.29,
+          56.16,
+          58.03
+        ]
+      },
+      "hrs": 0.801,
+      "mat": [
+        4.81,
+        6.41,
+        8.01
+      ],
+      "name": "Small patch",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $60–$125 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "DW-POP": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 3,
+        "k": 0.794,
+        "lo": 1.5,
+        "was": [
+          3.11,
+          3.15,
+          3.2
+        ]
+      },
+      "hrs": 0.024,
+      "mat": [
+        0.08,
+        0.1,
+        0.12
+      ],
+      "name": "Scrape popcorn ceiling",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $1.50–$3 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "DW-REM": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 2.5,
+        "k": 1,
+        "lo": 1,
+        "was": [
+          1.95,
+          1.95,
+          1.95
+        ]
+      },
+      "hrs": 0.02,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Remove drywall",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $1–$2.50 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "DW-TEX": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 2,
+        "k": 1.179,
+        "lo": 0.5,
+        "was": [
+          0.97,
+          1.06,
+          1.15
+        ]
+      },
+      "hrs": 0.009,
+      "mat": [
+        0.12,
+        0.18,
+        0.24
+      ],
+      "name": "Texture match",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $0.50–$2 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "ELE-CAN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas electrician cost guide (recommended.app); Inch Calculator 2026",
+        "hi": 330,
+        "k": 0.918,
+        "lo": 175,
+        "was": [
+          245.8,
+          283.17,
+          348.57
+        ]
+      },
+      "hrs": 1.01,
+      "mat": [
+        32.14,
+        50.5,
+        82.64
+      ],
+      "name": "Recessed light",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $175–$330 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "ELE-CIR": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas electrician cost guide (recommended.app); Inch Calculator 2026",
+        "hi": 700,
+        "k": 0.569,
+        "lo": 300,
+        "was": [
+          716.22,
+          790.97,
+          903.08
+        ]
+      },
+      "hrs": 1.707,
+      "mat": [
+        68.27,
+        91.03,
+        125.16
+      ],
+      "name": "New circuit",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $300–$700 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "ELE-HEAT": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas electrician cost guide (recommended.app); Inch Calculator 2026",
+        "hi": 25,
+        "k": 0.716,
+        "lo": 10,
+        "was": [
+          18.99,
+          20.95,
+          25.86
+        ]
+      },
+      "hrs": 0.036,
+      "mat": [
+        3.94,
+        4.65,
+        6.44
+      ],
+      "name": "Heated floor mat + thermostat",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $10–$25 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.05
+    },
+    "ELE-OUT": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas electrician cost guide (recommended.app); Inch Calculator 2026",
+        "hi": 300,
+        "k": 1,
+        "lo": 100,
+        "was": [
+          156.63,
+          175.32,
+          207.08
+        ]
+      },
+      "hrs": 0.75,
+      "mat": [
+        18,
+        28,
+        45
+      ],
+      "name": "Outlet / GFCI",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$300 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "ELE-PANEL": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas electrician cost guide (recommended.app); Inch Calculator 2026",
+        "hi": 4500,
+        "k": 0.661,
+        "lo": 1500,
+        "was": [
+          4816.51,
+          5750.78,
+          7619.31
+        ]
+      },
+      "hrs": 6.608,
+      "mat": [
+        1123.33,
+        1453.72,
+        2114.5
+      ],
+      "name": "Panel upgrade",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $1,500–$4,500 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "ELE-PEND": {
+      "hrs": 0.25,
+      "mat": [
+        15,
+        20,
+        30
+      ],
+      "name": "Pendant or fixture install",
+      "src": "Job actuals: Strata Electric invoice 1193, $75 labor per fixture (Oct 5, 2026)",
+      "sub": [
+        75,
+        75,
+        75
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "ELE-SW": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas electrician cost guide (recommended.app); Inch Calculator 2026",
+        "hi": 250,
+        "k": 1,
+        "lo": 100,
+        "was": [
+          104.42,
+          128.71,
+          194.11
+        ]
+      },
+      "hrs": 0.5,
+      "mat": [
+        12,
+        25,
+        60
+      ],
+      "name": "Switch / dimmer",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$250 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "ELE-UCL": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas electrician cost guide (recommended.app); Inch Calculator 2026",
+        "hi": 60,
+        "k": 0.726,
+        "lo": 25,
+        "was": [
+          47.02,
+          61.97,
+          90
+        ]
+      },
+      "hrs": 0.109,
+      "mat": [
+        8.71,
+        14.52,
+        25.42
+      ],
+      "name": "Under-cabinet lighting",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $25–$60 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "EXT-BODY": {
+      "hrs": 0.012,
+      "mat": [
+        0.24,
+        0.3,
+        0.34
+      ],
+      "name": "Exterior wall paint, 2 coats",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "EXT-DOOR": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 250,
+        "k": 1,
+        "lo": 100,
+        "was": [
+          160.8,
+          172.01,
+          185.09
+        ]
+      },
+      "hrs": 1.5,
+      "mat": [
+        12,
+        18,
+        25
+      ],
+      "name": "Entry door painted",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$250 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "EXT-EAVE": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 4,
+        "k": 1,
+        "lo": 1.5,
+        "was": [
+          2.22,
+          2.37,
+          2.56
+        ]
+      },
+      "hrs": 0.02,
+      "mat": [
+        0.2,
+        0.28,
+        0.38
+      ],
+      "name": "Eaves and soffits",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $1.50–$4 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "EXT-GAR": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 450,
+        "k": 1,
+        "lo": 200,
+        "was": [
+          286.68,
+          314.71,
+          342.74
+        ]
+      },
+      "hrs": 2.5,
+      "mat": [
+        30,
+        45,
+        60
+      ],
+      "name": "Garage door painted",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $200–$450 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "EXT-LIFT": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 1200,
+        "k": 0.878,
+        "lo": 400,
+        "was": [
+          1025.34,
+          1025.34,
+          1025.34
+        ]
+      },
+      "hrs": 1.756,
+      "mat": [
+        394.99,
+        394.99,
+        394.99
+      ],
+      "name": "Lift or scaffold rental",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $400–$1,200 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "EXT-TRIM": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 4,
+        "k": 1,
+        "lo": 1.5,
+        "was": [
+          3.33,
+          3.51,
+          3.8
+        ]
+      },
+      "hrs": 0.03,
+      "mat": [
+        0.3,
+        0.4,
+        0.55
+      ],
+      "name": "Exterior trim and fascia",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $1.50–$4 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "FLR-DEMO": {
+      "hrs": 0,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Remove flooring",
+      "src": "Supplier quote: G&C LVT removal $1.50/sf (Oct 22, 2026); 2 layers ran $3.00/sf (Sep 29, 2026)",
+      "sub": [
+        1.5,
+        1.5,
+        1.5
+      ],
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "FLR-GYP": {
+      "hrs": 0,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Gyp-crete underlayment, poured",
+      "src": "Supplier quote: Nevada Gypsum $5.97/sf (.75 in) and Insul-Flow $8.50/sf (1.25–1.5 in), Unit 523 bids Oct 2026; extra move-in $1,150",
+      "sub": [
+        5.97,
+        7.25,
+        8.5
+      ],
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "FLR-LVP": {
+      "hrs": 0,
+      "mat": [
+        2.2,
+        2.58,
+        4.5
+      ],
+      "name": "LVP flooring",
+      "src": "Supplier quote: G&C install $2.75/sf (Oct 22, 2026); LVT material $2.58/sf (G&C quote Sep 29, 2026)",
+      "sub": [
+        2.75,
+        2.75,
+        2.75
+      ],
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "FLR-STAIR": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 250,
+        "k": 0.75,
+        "lo": 100,
+        "was": [
+          186.58,
+          233.3,
+          308.04
+        ]
+      },
+      "hrs": 0.75,
+      "mat": [
+        33.75,
+        52.51,
+        82.51
+      ],
+      "name": "Stair tread + riser",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$250 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "FLR-TRANS": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 90,
+        "k": 0.782,
+        "lo": 40,
+        "was": [
+          64.38,
+          83.07,
+          105.49
+        ]
+      },
+      "hrs": 0.235,
+      "mat": [
+        14.08,
+        21.91,
+        31.3
+      ],
+      "name": "Transition strip",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $40–$90 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "FLR-UND": {
+      "hrs": 0.005,
+      "mat": [
+        0.39,
+        0.55,
+        0.8
+      ],
+      "name": "Underlayment",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "GL-ACC": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 350,
+        "k": 0.831,
+        "lo": 150,
+        "was": [
+          186.58,
+          270.67,
+          438.84
+        ]
+      },
+      "hrs": 0.831,
+      "mat": [
+        37.41,
+        74.81,
+        149.63
+      ],
+      "name": "Accessory set",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $150–$350 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "GL-DOOR": {
+      "hrs": 0.5,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Glass shower door",
+      "src": "Supplier quote: Pivot Glass est. 1248 (Oct 28, 2026): swing door + side lites $1,875 / frameless sliders $2,000 / large frameless enclosure $3,840, installed",
+      "sub": [
+        1875,
+        2000,
+        3840
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "GL-GRAB": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 250,
+        "k": 0.891,
+        "lo": 100,
+        "was": [
+          132.93,
+          179.64,
+          254.39
+        ]
+      },
+      "hrs": 0.668,
+      "mat": [
+        26.72,
+        48.99,
+        84.61
+      ],
+      "name": "Grab bar",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$250 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "GL-MED": {
+      "hrs": 1.5,
+      "mat": [
+        62,
+        220,
+        450
+      ],
+      "name": "Medicine cabinet",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0
+    },
+    "GL-MIR": {
+      "hrs": 0.75,
+      "mat": [
+        60,
+        215,
+        350
+      ],
+      "name": "Mirror installed",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0
+    },
+    "GL-PANEL": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 1200,
+        "k": 0.65,
+        "lo": 400,
+        "was": [
+          807.74,
+          1461.72,
+          2769.7
+        ]
+      },
+      "hrs": 0.975,
+      "mat": [
+        227.47,
+        454.94,
+        909.89
+      ],
+      "name": "Fixed glass panel",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $400–$1,200 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "HV-FAN": {
+      "hrs": 2,
+      "mat": [
+        28,
+        70,
+        110
+      ],
+      "name": "Bath fan duct to exterior",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0
+    },
+    "HV-HOOD": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 1200,
+        "k": 0.788,
+        "lo": 400,
+        "was": [
+          839.22,
+          951.34,
+          1175.56
+        ]
+      },
+      "hrs": 3.153,
+      "mat": [
+        94.6,
+        141.91,
+        236.51
+      ],
+      "name": "Range hood duct to exterior",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $400–$1,200 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "HV-REG": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 400,
+        "k": 0.794,
+        "lo": 150,
+        "was": [
+          296.02,
+          314.71,
+          342.74
+        ]
+      },
+      "hrs": 1.192,
+      "mat": [
+        27.8,
+        35.75,
+        47.66
+      ],
+      "name": "Move register",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $150–$400 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "PLB-DISP": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas plumber cost guide (recommended.app); national 2026 guides",
+        "hi": 600,
+        "k": 0.849,
+        "lo": 300,
+        "was": [
+          369.54,
+          500.34,
+          761.93
+        ]
+      },
+      "hrs": 0.849,
+      "mat": [
+        93.44,
+        152.9,
+        271.82
+      ],
+      "name": "Garbage disposal",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $300–$600 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "PLB-FAUC": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas plumber cost guide (recommended.app); national 2026 guides",
+        "hi": 700,
+        "k": 0.692,
+        "lo": 250,
+        "was": [
+          388.22,
+          649.82,
+          1060.9
+        ]
+      },
+      "hrs": 0.692,
+      "mat": [
+        83.1,
+        180.05,
+        332.4
+      ],
+      "name": "Faucet installed",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $250–$700 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "PLB-LINE": {
+      "hrs": 2,
+      "mat": [
+        31,
+        60,
+        90
+      ],
+      "name": "Water line added",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0
+    },
+    "PLB-MOVE": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas plumber cost guide (recommended.app); national 2026 guides",
+        "hi": 2500,
+        "k": 0.985,
+        "lo": 500,
+        "was": [
+          1208.22,
+          1320.34,
+          1469.82
+        ]
+      },
+      "hrs": 5.908,
+      "mat": [
+        118.15,
+        177.23,
+        255.99
+      ],
+      "name": "Move fixture rough-in",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $500–$2,500 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "PLB-REPIPE": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas plumber cost guide (recommended.app); national 2026 guides",
+        "hi": 800,
+        "k": 0.908,
+        "lo": 400,
+        "was": [
+          660.17,
+          716.22,
+          790.97
+        ]
+      },
+      "hrs": 2.723,
+      "mat": [
+        81.68,
+        108.91,
+        145.21
+      ],
+      "name": "Repipe per fixture (PEX)",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $400–$800 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "PLB-SINK": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas plumber cost guide (recommended.app); national 2026 guides",
+        "hi": 1200,
+        "k": 0.723,
+        "lo": 400,
+        "was": [
+          664.34,
+          1038.04,
+          1729.4
+        ]
+      },
+      "hrs": 1.445,
+      "mat": [
+        130.05,
+        274.56,
+        541.89
+      ],
+      "name": "Sink installed",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $400–$1,200 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "PLB-VALVE": {
+      "hrs": 0.5,
+      "mat": [
+        185,
+        316,
+        600
+      ],
+      "name": "Shower / tub valve and trim",
+      "src": "Supplier quote: Mr. Rooter 4 valves rough-in $2,610 = $652.50 each (Oct 2026); valve materials from real cost Oct 22",
+      "sub": [
+        652.5,
+        652.5,
+        652.5
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "PLB-WH": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas plumber cost guide (recommended.app); national 2026 guides",
+        "hi": 3500,
+        "k": 0.862,
+        "lo": 1800,
+        "was": [
+          2501.68,
+          3249.09,
+          4930.78
+        ]
+      },
+      "hrs": 4.309,
+      "mat": [
+        775.6,
+        1120.31,
+        1895.92
+      ],
+      "name": "Water heater replaced",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $1,800–$3,500 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "PNT-CEIL": {
+      "hrs": 0.014,
+      "mat": [
+        0.12,
+        0.2,
+        0.28
+      ],
+      "name": "Paint ceiling",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "PNT-COLOR": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 150,
+        "k": 1.722,
+        "lo": 50,
+        "was": [
+          43.56,
+          43.56,
+          43.56
+        ]
+      },
+      "hrs": 0.861,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Extra color setup",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $50–$150 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "PNT-DOOR": {
+      "hrs": 0.75,
+      "mat": [
+        8,
+        10,
+        17
+      ],
+      "name": "Paint door + frame",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0
+    },
+    "PNT-WALL": {
+      "hrs": 0.012,
+      "mat": [
+        0.13,
+        0.16,
+        0.27
+      ],
+      "name": "Paint walls, 2 coats",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "PNT-WIN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 90,
+        "k": 1.043,
+        "lo": 40,
+        "was": [
+          44.19,
+          47.93,
+          53.54
+        ]
+      },
+      "hrs": 0.417,
+      "mat": [
+        5.22,
+        7.3,
+        10.43
+      ],
+      "name": "Paint window trim",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $40–$90 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "REF-CRN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "HomeAdvisor refacing $150–450/lin ft; Las Vegas refacing pages",
+        "hi": 35,
+        "k": 0.84,
+        "lo": 15,
+        "was": [
+          23.6,
+          29.76,
+          40.04
+        ]
+      },
+      "hrs": 0.126,
+      "mat": [
+        3.36,
+        5.88,
+        10.08
+      ],
+      "name": "Crown molding",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $15–$35 per lin ft",
+      "unit": "lin ft",
+      "waste": 0.1
+    },
+    "REF-DOOR": {
+      "hrs": 0.68,
+      "mat": [
+        110,
+        147,
+        220
+      ],
+      "name": "Reface: factory-finished door, 2 hinges, pull",
+      "src": "Assumption",
+      "unit": "each",
+      "waste": 0
+    },
+    "REF-DRW": {
+      "hrs": 0.68,
+      "mat": [
+        65,
+        86,
+        130
+      ],
+      "name": "Reface: factory-finished drawer front + pull",
+      "src": "Assumption",
+      "unit": "each",
+      "waste": 0
+    },
+    "REF-END": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "HomeAdvisor refacing $150–450/lin ft; Las Vegas refacing pages",
+        "hi": 300,
+        "k": 0.987,
+        "lo": 150,
+        "was": [
+          166.08,
+          212.8,
+          287.54
+        ]
+      },
+      "hrs": 0.789,
+      "mat": [
+        44.41,
+        69.08,
+        108.55
+      ],
+      "name": "Reface: end panel",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $150–$300 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "REF-TOE": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "HomeAdvisor refacing $150–450/lin ft; Las Vegas refacing pages",
+        "hi": 15,
+        "k": 0.835,
+        "lo": 8,
+        "was": [
+          12.31,
+          14.37,
+          18.48
+        ]
+      },
+      "hrs": 0.067,
+      "mat": [
+        1.67,
+        2.51,
+        4.18
+      ],
+      "name": "Toe kick",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $8–$15 per lin ft",
+      "unit": "lin ft",
+      "waste": 0.1
+    },
+    "REF-VEN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "HomeAdvisor refacing $150–450/lin ft; Las Vegas refacing pages",
+        "hi": 120,
+        "k": 0.895,
+        "lo": 60,
+        "was": [
+          88.25,
+          100.58,
+          117.02
+        ]
+      },
+      "hrs": 0.447,
+      "mat": [
+        16.11,
+        21.48,
+        28.63
+      ],
+      "name": "Reface: box veneer per opening",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $60–$120 each",
+      "unit": "each",
+      "waste": 0.1
+    },
+    "RMD-DEMO": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 8,
+        "k": 0.887,
+        "lo": 2,
+        "was": [
+          5.64,
+          5.64,
+          5.64
+        ]
+      },
+      "hrs": 0.044,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Interior demo",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $2–$8 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "RMD-DOOR": {
+      "hrs": 1.5,
+      "mat": [
+        98,
+        180,
+        320
+      ],
+      "name": "Interior door installed",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0
+    },
+    "RMD-ELEC": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 350,
+        "k": 1.097,
+        "lo": 150,
+        "was": [
+          131.28,
+          168.65,
+          252.73
+        ]
+      },
+      "hrs": 0.823,
+      "mat": [
+        27.42,
+        49.36,
+        98.73
+      ],
+      "name": "Electrical device or light",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $150–$350 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "RMD-FRAME": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 130,
+        "k": 1,
+        "lo": 60,
+        "was": [
+          85.15,
+          89.26,
+          95.43
+        ]
+      },
+      "hrs": 0.5,
+      "mat": [
+        14,
+        16,
+        19
+      ],
+      "name": "Frame wall, 8 ft",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $60–$130 per lin ft",
+      "unit": "lin ft",
+      "waste": 0.1
+    },
+    "RMD-GDI": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 7000,
+        "k": 1.112,
+        "lo": 3000,
+        "was": [
+          3485.68,
+          4046.24,
+          4793.66
+        ]
+      },
+      "hrs": 17.794,
+      "mat": [
+        1000.93,
+        1334.57,
+        1779.43
+      ],
+      "name": "Infill garage door opening",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $3,000–$7,000 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "RSF-CHIP": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas tub refinishing pages 2026",
+        "hi": 150,
+        "k": 1,
+        "lo": 50,
+        "was": [
+          67.37,
+          76.72,
+          86.06
+        ]
+      },
+      "hrs": 0.5,
+      "mat": [
+        10,
+        15,
+        20
+      ],
+      "name": "Chip or crack repair",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $50–$150 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "RSF-SHW": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas tub refinishing pages 2026",
+        "hi": 850,
+        "k": 0.896,
+        "lo": 450,
+        "was": [
+          595.04,
+          669.78,
+          781.89
+        ]
+      },
+      "hrs": 3.583,
+      "mat": [
+        98.54,
+        134.37,
+        188.12
+      ],
+      "name": "Refinish shower pan / unit",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $450–$850 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "RSF-TILE": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas tub refinishing pages 2026",
+        "hi": 10,
+        "k": 0.929,
+        "lo": 5,
+        "was": [
+          7.67,
+          8.61,
+          10.47
+        ]
+      },
+      "hrs": 0.046,
+      "mat": [
+        1.39,
+        1.86,
+        2.79
+      ],
+      "name": "Refinish wall tile",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $5–$10 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "RSF-TUB": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas tub refinishing pages 2026",
+        "hi": 630,
+        "k": 0.899,
+        "lo": 335,
+        "was": [
+          508.98,
+          583.72,
+          677.15
+        ]
+      },
+      "hrs": 3.148,
+      "mat": [
+        80.95,
+        116.92,
+        161.89
+      ],
+      "name": "Refinish tub",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $335–$630 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "RSF-VAN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas tub refinishing pages 2026",
+        "hi": 400,
+        "k": 0.922,
+        "lo": 200,
+        "was": [
+          288.18,
+          325.55,
+          381.6
+        ]
+      },
+      "hrs": 1.843,
+      "mat": [
+        46.08,
+        64.51,
+        92.15
+      ],
+      "name": "Refinish vanity top or sink",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $200–$400 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "SET-CLEAN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 800,
+        "k": 0.785,
+        "lo": 300,
+        "was": [
+          535.99,
+          573.36,
+          629.42
+        ]
+      },
+      "hrs": 4.709,
+      "mat": [
+        31.39,
+        47.09,
+        70.64
+      ],
+      "name": "Final clean",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $300–$800 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "SET-DUMP": {
+      "hrs": 1,
+      "mat": [
+        800,
+        800,
+        800
+      ],
+      "name": "Dumpster or trailer load",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0
+    },
+    "SET-DUST": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 400,
+        "k": 1.191,
+        "lo": 150,
+        "was": [
+          160.96,
+          188.99,
+          245.04
+        ]
+      },
+      "hrs": 1.191,
+      "mat": [
+        53.57,
+        71.43,
+        107.15
+      ],
+      "name": "Dust wall / zip door",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $150–$400 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "SET-PM": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 150,
+        "k": 1,
+        "lo": 50,
+        "was": [
+          76.88,
+          76.88,
+          76.88
+        ]
+      },
+      "hrs": 1,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Supervision per day on site",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $50–$150 per day",
+      "unit": "day",
+      "waste": 0
+    },
+    "SET-PROT": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 1.5,
+        "k": 0.704,
+        "lo": 0.5,
+        "was": [
+          1.24,
+          1.42,
+          1.7
+        ]
+      },
+      "hrs": 0.007,
+      "mat": [
+        0.18,
+        0.25,
+        0.35
+      ],
+      "name": "Floor protection",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $0.50–$1.50 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "SHW-BENCH": {
+      "hrs": 0,
+      "mat": [
+        90,
+        140,
+        220
+      ],
+      "name": "Shower bench",
+      "src": "Supplier quote: G&C bench $400–600 (Oct 22, 2026)",
+      "sub": [
+        400,
+        500,
+        600
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "SHW-CURB": {
+      "hrs": 0.5,
+      "mat": [
+        15,
+        28,
+        36
+      ],
+      "name": "Shower curb",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc); Better/Best order corrected Oct 31, 2026",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "SHW-LIN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 1200,
+        "k": 0.967,
+        "lo": 500,
+        "was": [
+          551.59,
+          775.81,
+          1149.52
+        ]
+      },
+      "hrs": 1.933,
+      "mat": [
+        174.01,
+        290.02,
+        483.37
+      ],
+      "name": "Linear drain",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $500–$1,200 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "SHW-PAN": {
+      "hrs": 0,
+      "mat": [
+        250,
+        411,
+        550
+      ],
+      "name": "Shower pan and liner",
+      "src": "Supplier quote: G&C build and tile shower pan $1,050, very large $1,500 labor (Oct 1, 2026); pan materials from real cost Oct 22",
+      "sub": [
+        1050,
+        1050,
+        1500
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "SID-CORNER": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 120,
+        "k": 0.876,
+        "lo": 50,
+        "was": [
+          74.63,
+          97.06,
+          125.08
+        ]
+      },
+      "hrs": 0.35,
+      "mat": [
+        15.76,
+        26.27,
+        39.41
+      ],
+      "name": "Outside corner",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $50–$120 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "SID-PANEL": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 14,
+        "k": 0.799,
+        "lo": 8,
+        "was": [
+          10.47,
+          13.76,
+          18.49
+        ]
+      },
+      "hrs": 0.04,
+      "mat": [
+        2.08,
+        3.36,
+        5.2
+      ],
+      "name": "Siding installed",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $8–$14 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "SID-REM": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 3,
+        "k": 1,
+        "lo": 1,
+        "was": [
+          2.05,
+          2.05,
+          2.05
+        ]
+      },
+      "hrs": 0.02,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Remove siding",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $1–$3 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "SID-SCAF": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 1500,
+        "k": 0.784,
+        "lo": 500,
+        "was": [
+          1148.34,
+          1148.34,
+          1148.34
+        ]
+      },
+      "hrs": 2.351,
+      "mat": [
+        352.68,
+        352.68,
+        352.68
+      ],
+      "name": "Scaffold or lift rental",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $500–$1,500 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "SID-TRIM": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 20,
+        "k": 0.812,
+        "lo": 8,
+        "was": [
+          15.39,
+          18.47,
+          23.61
+        ]
+      },
+      "hrs": 0.081,
+      "mat": [
+        2.03,
+        3.25,
+        5.28
+      ],
+      "name": "Trim and fascia",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $8–$20 per lin ft",
+      "unit": "lin ft",
+      "waste": 0.1
+    },
+    "SID-WIN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 250,
+        "k": 1,
+        "lo": 100,
+        "was": [
+          128.71,
+          156.74,
+          203.45
+        ]
+      },
+      "hrs": 0.8,
+      "mat": [
+        25,
+        40,
+        65
+      ],
+      "name": "Window or door trim kit",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $100–$250 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "SID-WRB": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 1.5,
+        "k": 1,
+        "lo": 0.75,
+        "was": [
+          1.03,
+          1.23,
+          1.54
+        ]
+      },
+      "hrs": 0.005,
+      "mat": [
+        0.25,
+        0.35,
+        0.5
+      ],
+      "name": "House wrap",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $0.75–$1.50 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "STL-BLDG": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 30,
+        "k": 1,
+        "lo": 10,
+        "was": [
+          32.26,
+          37.87,
+          47.21
+        ]
+      },
+      "hrs": 0.08,
+      "mat": [
+        12,
+        15,
+        20
+      ],
+      "name": "Steel building or carport kit, erected",
+      "src": "Market allowance Oct 31, 2026: not used, steel is priced from manufacturer quotes",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "STL-ROLL": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 4500,
+        "k": 1,
+        "lo": 1500,
+        "was": [
+          2173.68,
+          3107.95,
+          4602.78
+        ]
+      },
+      "hrs": 4,
+      "mat": [
+        900,
+        1400,
+        2200
+      ],
+      "name": "Roll-up door",
+      "src": "Market allowance Oct 31, 2026: not used, steel is priced from manufacturer quotes",
+      "unit": "each",
+      "waste": 0
+    },
+    "STL-TALL": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 6,
+        "k": 1,
+        "lo": 1,
+        "was": [
+          4.03,
+          4.97,
+          5.9
+        ]
+      },
+      "hrs": 0.01,
+      "mat": [
+        1.5,
+        2,
+        2.5
+      ],
+      "name": "Tall building upcharge (over 12 ft)",
+      "src": "Market allowance Oct 31, 2026: not used, steel is priced from manufacturer quotes",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "STL-WALK": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 2000,
+        "k": 1,
+        "lo": 800,
+        "was": [
+          1209.84,
+          1583.55,
+          2050.68
+        ]
+      },
+      "hrs": 3,
+      "mat": [
+        450,
+        650,
+        900
+      ],
+      "name": "Walk door",
+      "src": "Market allowance Oct 31, 2026: not used, steel is priced from manufacturer quotes",
+      "unit": "each",
+      "waste": 0
+    },
+    "STU-CRACK": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "2026 stucco repair guides; Las Vegas norms",
+        "hi": 25,
+        "k": 1.132,
+        "lo": 8,
+        "was": [
+          15.16,
+          15.9,
+          17.03
+        ]
+      },
+      "hrs": 0.136,
+      "mat": [
+        1.36,
+        1.81,
+        2.49
+      ],
+      "name": "Crack repair",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $8–$25 per lin ft",
+      "unit": "lin ft",
+      "waste": 0
+    },
+    "STU-FIN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "2026 stucco repair guides; Las Vegas norms",
+        "hi": 8,
+        "k": 1,
+        "lo": 3,
+        "was": [
+          5.54,
+          6.15,
+          7.18
+        ]
+      },
+      "hrs": 0.04,
+      "mat": [
+        0.6,
+        0.9,
+        1.4
+      ],
+      "name": "Finish coat / color match",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $3–$8 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "STU-PATCH": {
+      "hrs": 0.2,
+      "mat": [
+        2.55,
+        3,
+        3.8
+      ],
+      "name": "Stucco patch, 3-coat",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "sq ft",
+      "waste": 0.15
+    },
+    "STU-SCAF": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "2026 stucco repair guides; Las Vegas norms",
+        "hi": 1500,
+        "k": 0.921,
+        "lo": 500,
+        "was": [
+          976.86,
+          976.86,
+          976.86
+        ]
+      },
+      "hrs": 2.764,
+      "mat": [
+        322.46,
+        322.46,
+        322.46
+      ],
+      "name": "Scaffold rental",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $500–$1,500 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "TILE-ACC": {
+      "hrs": 0,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Tile accent wall (install only; tile priced separately)",
+      "src": "Supplier quote: G&C vanity accent wall $1,300; powder 2 walls $1,800 (Oct 1, 2026)",
+      "sub": [
+        900,
+        1300,
+        1300
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "TILE-BAND": {
+      "hrs": 0,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Tile accent band in shower (install)",
+      "src": "Supplier quote: G&C accent band $800–875 (Oct 22, 2026)",
+      "sub": [
+        800,
+        850,
+        875
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "TILE-EDGE": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 25,
+        "k": 0.716,
+        "lo": 12,
+        "was": [
+          18.98,
+          25.15,
+          35.43
+        ]
+      },
+      "hrs": 0.072,
+      "mat": [
+        2.86,
+        5.01,
+        8.59
+      ],
+      "name": "Edge trim",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $12–$25 per lin ft",
+      "unit": "lin ft",
+      "waste": 0.1
+    },
+    "TILE-FLR": {
+      "hrs": 0,
+      "mat": [
+        2.3,
+        5.5,
+        9
+      ],
+      "name": "Floor tile set + grout",
+      "src": "Supplier quote: G&C floor tile labor $4.25–9/sf (Oct 22, 2026); sub set for medium tile, size and pattern scale it",
+      "sub": [
+        4.25,
+        5.5,
+        7.5
+      ],
+      "unit": "sq ft",
+      "waste": 0.12
+    },
+    "TILE-NICHE": {
+      "hrs": 0,
+      "mat": [
+        60,
+        90,
+        140
+      ],
+      "name": "Shower niche",
+      "src": "Supplier quote: G&C niche $250–500 (Oct 22, 2026); $300 on Oct 1, 2026 bath quote",
+      "sub": [
+        250,
+        300,
+        500
+      ],
+      "unit": "each",
+      "waste": 0
+    },
+    "TILE-REM": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 7,
+        "k": 0.581,
+        "lo": 3,
+        "was": [
+          8.61,
+          8.61,
+          8.61
+        ]
+      },
+      "hrs": 0.046,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Remove old tile",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $3–$7 per sq ft",
+      "unit": "sq ft",
+      "waste": 0
+    },
+    "TILE-SPL": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 40,
+        "k": 0.975,
+        "lo": 20,
+        "was": [
+          23.5,
+          28.73,
+          37.1
+        ]
+      },
+      "hrs": 0.156,
+      "mat": [
+        2.92,
+        5.36,
+        9.26
+      ],
+      "name": "Backsplash / dry wall tile set + grout",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $20–$40 per sq ft",
+      "unit": "sq ft",
+      "waste": 0.12
+    },
+    "TILE-WALL": {
+      "hrs": 0,
+      "mat": [
+        3.5,
+        6,
+        10
+      ],
+      "name": "Wall tile set + grout",
+      "src": "Supplier quote: G&C wall tile labor $12–14/sf for 12x24, $16–18 large format (Oct 22, 2026); sub set for medium tile, size and pattern scale it",
+      "sub": [
+        10,
+        11,
+        14
+      ],
+      "unit": "sq ft",
+      "waste": 0.12
+    },
+    "TILE-WP": {
+      "hrs": 0.03,
+      "mat": [
+        0.85,
+        2.2,
+        2.3
+      ],
+      "name": "Waterproofing membrane",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc); Better/Best order corrected Oct 31, 2026",
+      "unit": "sq ft",
+      "waste": 0.1
+    },
+    "TRIM-BASE": {
+      "hrs": 0.06,
+      "mat": [
+        1.6,
+        2.15,
+        4
+      ],
+      "name": "Baseboard installed",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "lin ft",
+      "waste": 0.1
+    },
+    "TRIM-CASE": {
+      "hrs": 0.6,
+      "mat": [
+        21,
+        33,
+        55
+      ],
+      "name": "Door casing set",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0.1
+    },
+    "TRIM-CORNER": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 20,
+        "k": 1,
+        "lo": 10,
+        "was": [
+          15.38,
+          15.38,
+          15.38
+        ]
+      },
+      "hrs": 0.15,
+      "mat": [
+        0,
+        0,
+        0
+      ],
+      "name": "Corner cut / cope",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $10–$20 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "TRIM-CROWN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "National 2026 cost guides adjusted for Las Vegas",
+        "hi": 22,
+        "k": 0.731,
+        "lo": 14,
+        "was": [
+          20.52,
+          24.63,
+          30.79
+        ]
+      },
+      "hrs": 0.102,
+      "mat": [
+        2.19,
+        3.65,
+        5.85
+      ],
+      "name": "Crown molding installed",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $14–$22 per lin ft",
+      "unit": "lin ft",
+      "waste": 0.1
+    },
+    "WIN-BLIND": {
+      "hrs": 0.5,
+      "mat": [
+        29,
+        55,
+        67
+      ],
+      "name": "Faux wood blind installed",
+      "src": "Supplier quote: Home Depot quote H3302-618068 faux wood blinds $28.98–66.98 (Oct 2, 2026)",
+      "unit": "each",
+      "waste": 0
+    },
+    "WIN-DOOR": {
+      "hrs": 4,
+      "mat": [
+        390,
+        900,
+        1800
+      ],
+      "name": "Exterior door replaced",
+      "src": "Real cost Oct 22, 2026 (A&H Price Book — Real Costs doc)",
+      "unit": "each",
+      "waste": 0
+    },
+    "WIN-PATIO": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas window cost pages 2026",
+        "hi": 5000,
+        "k": 0.726,
+        "lo": 2000,
+        "was": [
+          2949.49,
+          4818.03,
+          8181.39
+        ]
+      },
+      "hrs": 4.359,
+      "mat": [
+        871.73,
+        1598.16,
+        2905.75
+      ],
+      "name": "Patio / sliding door",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $2,000–$5,000 each",
+      "unit": "each",
+      "waste": 0
+    },
+    "WIN-WIN": {
+      "allow": {
+        "at": "2026-10-31",
+        "basis": "Las Vegas window cost pages 2026",
+        "hi": 1200,
+        "k": 0.799,
+        "lo": 500,
+        "was": [
+          914.19,
+          1063.67,
+          1661.6
+        ]
+      },
+      "hrs": 2.397,
+      "mat": [
+        239.74,
+        303.67,
+        559.38
+      ],
+      "name": "Window replaced",
+      "src": "Market allowance Oct 31, 2026: Las Vegas customer range $500–$1,200 each",
+      "unit": "each",
+      "waste": 0
+    }
+  },
+  "companies": [
+    {
+      "addr": "225 Carson Way, Henderson, NV 89015",
+      "lic": "UT 13008872-5501 (B100)",
+      "limit": 0,
+      "name": "A&H Services LLC",
+      "prefix": "INV",
+      "states": [
+        "NV",
+        "UT",
+        "AZ",
+        "CA"
+      ]
+    },
+    {
+      "addr": "225 Carson Way, Henderson, NV 89015",
+      "lic": "NV 0087618 (B-2)",
+      "limit": 200000,
+      "name": "A&H Construction LLC",
+      "prefix": "AHC",
+      "states": [
+        "NV"
+      ]
+    }
+  ],
+  "margin": {
+    "Installer programs": 30,
+    "Remodel": 42,
+    "Service": 45
+  },
+  "rate": 41,
+  "rateBasis": "Set 2026-10-30. Labor $41/billable hr = Las Vegas market wages (BLS OEWS May 2025/2024) for current crew mix (1 lead carpenter, 2 leads in training, 3 laborers), +25.2% burden (FICA 7.65%, FUTA, NV UI ~2.1%, workers comp 10.39% assigned-risk 5645, 5% PTO placeholder), 80% billable. Margins: Remodel 42% and Service 45% cover ~32% overhead (Overhead Tracker, corrected) + ~10% profit; Installer programs 30%.",
+  "sell": {
+    "helper": 85,
+    "lead": 120,
+    "leadPct": 50
+  }
+}
