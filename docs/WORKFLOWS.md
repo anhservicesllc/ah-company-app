@@ -77,6 +77,22 @@ Start from **Job board → + Job without an estimate**: by voice, or by tapping 
 - **On a job:** the job file and the job screen have a **Crew** picker. Picking a crew copies its people onto the job; **Change who's on this job** adds or removes one person. The job keeps name snapshots (`crewName`, `staffIds`, `staffNames`, `staffLead`) so field crews see who's on it, and `crew` (sign-ins) keeps the time clock working.
 - **By voice:** "send the handyman crew", a crew's name, or an employee's full name in a job-without-an-estimate note assigns them.
 
+## Calendar
+
+The **Calendar** tab (was Schedule; screen key `schedule`). Each appointment sits on one calendar (`appts.cal`; older ones are placed by type with `calOf`).
+
+| Calendar | Can see | Can add |
+|---|---|---|
+| Estimators | Tech, Estimator, Senior, Office | same |
+| Field | Tech, Estimator, Senior, Office, Field crew | Senior, Office |
+| Vendors & deliveries | Estimator, Senior, Office | same |
+| Office | Senior, Office | same |
+
+- **Showing calendars:** tap a calendar to show or hide it; **Master** shows every calendar you can see. The choice is remembered on that phone.
+- **Always visible:** someone booked on an appointment always sees it.
+- **Manage calendars** (Office, Senior): rename, recolor, set who can see and who can add, turn one off, add crew calendars or others. Changes are stored in `calendars`, overriding the built-in four (`CAL0`).
+- **New appointment:** pick the **Calendar**, plus an optional **Crew** (adds the crew's sign-ins to "who goes") and **Vendor or sub**.
+
 ## Tabs by role
 
 Each role sees only its tabs (`cfg.tabRoles`, set in **Price book → Settings → Tabs each role sees**; defaults in `TAB_ROLES0`). Money and Subs & vendors start as Office only. Opening a hidden tab's screen sends the person to their first allowed tab. This keeps screens simple; it is not a security lock (the database access rules are).
