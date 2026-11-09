@@ -14,6 +14,7 @@ Known problems and their fixes. **Add a row whenever you fix something new:** sy
 | Voice fill missed something | It only fills what it can read with confidence. With AI off (server /admin) it uses the simpler built-in reader. Fill the rest by hand |
 | Wrong role options in "Working as" | The Team list (`office/private/team`) controls them. When it's empty, anyone can pick any role |
 | Milestone emails missing for server trainees | Server /admin "Training updates to the office": status on, no error. Then search Gmail for `subject:"A&H server training export"` |
+| Something entered in claude.ai isn't on the server (or the other way) | They keep separate data | Price book → Backup and restore: download in one, restore in the other, ticking only what to move. Photos stay where they were taken |
 | A price looks wrong | Line flags (*Below market* usually means a missing cost); `cfg.book` for that code; the scope's tier and adjustments; `marginOf(e)`; minimum job (PRICING.md) |
 | Red Nevada banner on an estimate | The deposit is over $1,000 / 10%. Fix the payment schedule (WORKFLOWS.md) |
 
