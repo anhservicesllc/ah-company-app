@@ -11,8 +11,9 @@ test('academies have the right courses and valid quiz questions', async () => {
     bad: a.courses.flatMap(c => (c.q.length !== 5 ? [c.c + ': ' + c.q.length + ' questions'] : []).concat(c.q.filter(q => !(q.a >= 0 && q.a < q.o.length) || !q.x).map(q => c.c + ': ' + q.p))),
     dup: a.courses.length - new Set(a.courses.map(c => c.c)).size })));
   const by = Object.fromEntries(r.map(a => [a.id, a]));
-  assert.equal(by.pm.n, 17); assert.equal(by.cab.n, 17); assert.equal(by.est.n, 18);
-  for (const a of r) { assert.deepEqual(a.bad, [], a.id + ' has bad questions'); assert.equal(a.dup, 0, a.id + ' duplicate codes'); assert.match(a.doc, /^https:\/\/claude\.ai\/artifact\//); }
+  assert.equal(by.pm.n, 17); assert.equal(by.cab.n, 18, 'Cabinet + the shared cabinet measuring course'); assert.equal(by.est.n, 18);
+  assert.equal(by.mt.n, 10); assert.equal(by.car.n, 11); assert.equal(by.til.n, 13); assert.equal(by.flr.n, 11); assert.equal(by.shw.n, 12);
+  for (const a of r) { assert.deepEqual(a.bad, [], a.id + ' has bad questions'); assert.equal(a.dup, 0, a.id + ' duplicate codes'); if (a.doc || ['pm', 'cab', 'est'].includes(a.id)) assert.match(a.doc, /^https:\/\/claude\.ai\/artifact\//); }
   await app.close();
 });
 
@@ -77,4 +78,19 @@ test('a supervisor cannot sign off their own course (the owner can)', async () =
   await own.page.click('[data-trac="cab"]'); await own.page.waitForTimeout(300);
   assert.equal((await own.page.$$('[data-trsign]')).length, 1, 'owner may sign off');
   await own.close();
+});
+
+test('a measuring course signed off once counts in Measure Tech and its trade academy', async () => {
+  const app = await openApp();
+  const r = await app.page.evaluate(() => {
+    const uid = myId(), sign = c => trUp(trnP, { id: trKey(uid, c), uid, course: c, best: 100, passed: true, task: { note: 'x', at: '2026-11-01' }, sign: { by: 'u_x', at: '2026-11-01T10:00:00Z' } });
+    sign('MT-104');
+    const cnt = id => TRN.find(a => a.id === id).courses.filter(c => trRec(uid, c.c)?.sign).length;
+    return { mt: cnt('mt'), shw: cnt('shw'), til: cnt('til'), miles: trMiles(uid).map(m => m.key), log: trLog(uid).length, ac: trMsAc('shw1')[1] };
+  });
+  assert.equal(r.mt, 1); assert.equal(r.shw, 1); assert.equal(r.til, 0);
+  assert.ok(r.miles.includes('mt1') && r.miles.includes('shw1'), r.miles.join(','));
+  assert.equal(r.log, 2, 'shared course logged once (task + sign-off), not twice');
+  assert.equal(r.ac, 'Shower Pan & Bath Tile Academy');
+  await app.close();
 });
