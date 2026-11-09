@@ -3517,11 +3517,11 @@ const TRN_CAT="https://drive.google.com/open?id=1fq9suZvRcLOS2QeI2YD-RmsE888axnN
 const TRN=[{id:"pm",name:"Project Manager Academy",doc:"https://claude.ai/artifact/3KT7gomfVNFtCpDFxrUWyo",who:"PMs, PM trainees, lead carpenters moving up",courses:TRN_PM},
  {id:"cab",name:"Cabinet Academy",doc:"https://claude.ai/artifact/9CLgrSQe6qKP8ZYNr8aZbD",who:"helpers, installers, makeover crews, leads, PMs and office on cabinet and Home Depot jobs",courses:[mtc("MT-106"),...TRN_CAB]},
  {id:"est",name:"Estimating Academy",doc:"https://claude.ai/artifact/4w5sjtvAX6TX8KoqmgWvWS",who:"measure techs, estimators, senior estimators, and PMs who price change orders",courses:TRN_EST},
- {id:"mt",name:"Measure Tech Academy",who:"measure techs, estimators and leads who measure jobs; every course is also in its trade academy",courses:TRN_MT},
- {id:"car",name:"Carpenter Academy",who:"carpenters, helpers and leads",courses:TRN_CAR_A},
- {id:"til",name:"Tile Setter Academy",who:"tile setters and helpers",courses:TRN_TIL_A},
- {id:"flr",name:"LVT & Vinyl Flooring Academy",who:"flooring installers and helpers",courses:TRN_FLR_A},
- {id:"shw",name:"Shower Pan & Bath Tile Academy",who:"tile setters and leads who build showers (mortar pan, Kerdi-type sheet and liquid membranes)",courses:TRN_SHW_A},{id:"off",name:"Office Academy",soon:1,who:"Office staff"},
+ {id:"mt",doc:"https://claude.ai/artifact/6N2YhHeizA4U1APCxNCocd",name:"Measure Tech Academy",who:"measure techs, estimators and leads who measure jobs; every course is also in its trade academy",courses:TRN_MT},
+ {id:"car",doc:"https://claude.ai/artifact/6N2YhHeizA4U1APCxNCocd",name:"Carpenter Academy",who:"carpenters, helpers and leads",courses:TRN_CAR_A},
+ {id:"til",doc:"https://claude.ai/artifact/6N2YhHeizA4U1APCxNCocd",name:"Tile Setter Academy",who:"tile setters and helpers",courses:TRN_TIL_A},
+ {id:"flr",doc:"https://claude.ai/artifact/6N2YhHeizA4U1APCxNCocd",name:"LVT & Vinyl Flooring Academy",who:"flooring installers and helpers",courses:TRN_FLR_A},
+ {id:"shw",doc:"https://claude.ai/artifact/6N2YhHeizA4U1APCxNCocd",name:"Shower Pan & Bath Tile Academy",who:"tile setters and leads who build showers (mortar pan, Kerdi-type sheet and liquid membranes)",courses:TRN_SHW_A},{id:"off",name:"Office Academy",soon:1,who:"Office staff"},
  {id:"safe",name:"Safety series",soon:1,who:"Everyone in the field"}];
 const trnAll=()=>{const m=new Map();TRN.forEach(a=>(a.courses||[]).forEach(c=>{if(!m.has(c.c))m.set(c.c,c)}));return [...m.values()]};
 const trnCourse=c=>{for(const a of TRN)for(const x of (a.courses||[]))if(x.c===c)return x;return null};
