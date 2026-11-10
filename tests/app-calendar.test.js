@@ -139,6 +139,14 @@ test('reminder choice is saved, shown, and used by "Add to my calendar"', async 
   await p.click('[data-apnew=""]'); await p.waitForTimeout(200);
   assert.equal(await p.$eval('#apRemind', e => e.value), '60', '1 hour by default');
   await p.selectOption('#apRemind', '1440'); await p.fill('#apLabel', 'Reminder test');
+  await p.selectOption('#apDur', '120'); await p.locator('#apDur').blur();
+  /* a live update from another device must not wipe the form while it is being filled in (tablet: dropdown came up empty) */
+  const nodeBefore = await p.evaluate(() => { window._mark = document.querySelector('#apRemind'); render(true); return true; });
+  assert.ok(nodeBefore && await p.evaluate(() => document.querySelector('#apRemind') === window._mark), 'form not redrawn by live updates');
+  await p.evaluate(() => renderScreen()); await p.waitForTimeout(100);
+  assert.equal(await p.$eval('#apRemind', e => e.value), '1440', 'pick kept through a redraw');
+  assert.equal(await p.$eval('#apDur', e => e.value), '120');
+  assert.equal(await p.$eval('#apLabel', e => e.value), 'Reminder test');
   await p.click('[data-apsave]'); await p.waitForTimeout(300);
   const r = await p.evaluate(() => { const a = appts.find(x => x.label === 'Reminder test'); return { remind: a.remind, tz: !!a.tz, ics: icsText(a) }; });
   assert.equal(r.remind, 1440); assert.ok(r.tz);
