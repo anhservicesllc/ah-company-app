@@ -103,8 +103,10 @@ test('month, 3-month, day and list views; tap a day to open it', async () => {
   await p.click('[data-calview="year"]'); await p.waitForTimeout(200);
   assert.equal(await p.$$eval('.mgrid', g => g.length), 12);
   await p.click('[data-calview="range"]'); await p.waitForTimeout(200);
-  await p.fill('[data-calrange="from"]', today); await p.locator('[data-calrange="from"]').dispatchEvent('change'); await p.waitForTimeout(200);
+  await p.fill('[data-calrange="from"]', today); await p.locator('[data-calrange="from"]').dispatchEvent('input'); await p.waitForTimeout(500);
   assert.match(await shown(p), /Install Jones/);
+  assert.equal(await p.$$eval('.mgrid', g => g.length), 1, 'picked dates show as a day grid');
+  assert.match(await shown(p), /\d+ appointments? from/, 'count line for the picked dates');
   await p.click('[data-calview="list"]'); await p.waitForTimeout(200);
   assert.match(await shown(p), /Install Jones/);
   assert.deepEqual(app.errors, []);

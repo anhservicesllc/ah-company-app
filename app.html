@@ -2435,6 +2435,9 @@ function monthGrid(m,pick,max){const first=m,last=addDays(addMonths(m,1),-1);let
   cells.push(`<div class="mcell${out?" out":""}${d===ldate()?" today":""}"><button type="button" class="mday" data-calday="${d}" aria-label="${esc(dayName(d))}">${+d.slice(8)}</button>${out?"":L.slice(0,max).map(a=>{const C=calById(calOf(a));return `<button type="button" class="mitem" style="border-left-color:${esc(C.color)}" data-apedit="${esc(a.id)}" title="${esc((a.time||"")+" "+apTitle(a))}">${esc(((a.time||"").replace(/^0/,"")+" "+(apTitle(a)||a.kind)).trim())}</button>`}).join("")+(L.length>max?`<button type="button" class="mmore" data-calday="${d}">+${L.length-max} more</button>`:"")}</div>`);
   d=addDays(d,1)}
  return `<div class="mgrid">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(x=>`<div class="mhead">${x}</div>`).join("")}${cells.join("")}</div>`}
+function rangeGrid(from,to,pick){const days=Math.round((new Date(to)-new Date(from))/864e5)+1;if(days>120)return "";let d=weekStart(from);const end=addDays(weekStart(to),6),cells=[];
+ while(d<=end){const L=apOn(d,pick),out=d<from||d>to;cells.push(`<div class="mcell${out?" out":""}${d===ldate()?" today":""}"><button type="button" class="mday" data-calday="${d}">${d.slice(8)==="01"||d===from?new Date(d+"T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric"}):+d.slice(8)}</button>${out?"":L.slice(0,3).map(a=>{const C=calById(calOf(a));return `<button type="button" class="mitem" style="border-left-color:${esc(C.color)}" data-apedit="${esc(a.id)}">${esc(((a.time||"").replace(/^0/,"")+" "+(apTitle(a)||a.kind)).trim())}</button>`}).join("")+(L.length>3?`<button type="button" class="mmore" data-calday="${d}">+${L.length-3} more</button>`:"")}</div>`);d=addDays(d,1)}
+ return `<div class="mgrid">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(x=>`<div class="mhead">${x}</div>`).join("")}${cells.join("")}</div>`}
 function calBody(V,A,R,pick){
  if(V==="day"){const L=apOn(A,pick);return `<div class="bcol" style="max-width:640px"><h3 style="margin:0">${esc(dayName(A))}${A===ldate()?' <span class="pill">Today</span>':""}</h3>${L.map(apCard).join("")||'<p class="note" style="margin:0">Nothing booked.</p>'}</div>`}
  if(V==="week"){const days=[0,1,2,3,4,5,6].map(i=>addDays(R.from,i));
@@ -2442,9 +2445,10 @@ function calBody(V,A,R,pick){
  if(V==="month")return monthGrid(R.from,pick,3)+`<p class="note">Tap a day to see it; tap an appointment to open it.</p>`;
  if(V==="3m"||V==="6m"||V==="year"){const k=V==="3m"?3:V==="6m"?6:12,cls=V==="3m"?"m3":"m3 msmall";
   return `<div class="${cls}" style="display:grid;gap:14px;grid-template-columns:${V==="3m"?"1fr":"repeat(auto-fill,minmax(300px,1fr))"}">${Array.from({length:k},(_,i)=>{const m=addMonths(R.from,i);return `<div><h3 style="margin:0 0 4px"><button type="button" class="linkbtn" data-calmonth="${m}">${esc(monthName(m))}</button> <span class="count">${appts.filter(a=>a.date>=m&&a.date<=addDays(addMonths(m,1),-1)&&pick(a)).length}</span></h3>${monthGrid(m,pick,V==="3m"?2:1)}</div>`}).join("")}</div>`}
- const out=[];for(let d=R.from;d<=R.to;d=addDays(d,1)){const L=apOn(d,pick);if(L.length)out.push(`<div class="bcol"><h3 style="margin:0">${esc(dayName(d))}</h3>${L.map(apCard).join("")}</div>`)}
+ const out=[];let cnt=0;for(let d=R.from;d<=R.to;d=addDays(d,1)){const L=apOn(d,pick);cnt+=L.length;if(L.length)out.push(`<div class="bcol"><h3 style="margin:0">${esc(dayName(d))}</h3>${L.map(apCard).join("")}</div>`)}
+ if(V==="range")return `<p style="margin:0 0 6px"><strong>${cnt} appointment${cnt===1?"":"s"}</strong> from ${esc(fmtDate(R.from))} to ${esc(fmtDate(R.to))}</p>${rangeGrid(R.from,R.to,pick)}<div class="stack" style="gap:10px;max-width:760px;margin-top:12px">${out.join("")}</div>`;
  return `<div class="stack" style="gap:10px;max-width:760px">${out.join("")||`<p class="note">Nothing booked ${V==="range"?"between those dates":"in the next 30 days"}.</p>`}</div>`}
-document.addEventListener("change",ev=>{const t=ev.target;if(!t.dataset||!t.dataset.calrange||screen!=="schedule"||!t.value)return;if(t.dataset.calrange==="from"){window._calRF=t.value;if(window._calRT&&window._calRT<t.value)window._calRT=t.value}else window._calRT=t.value;if(!window._calRF)window._calRF=calAnchor();renderScreen()});
+["change","input"].forEach(evn=>document.addEventListener(evn,ev=>{const t=ev.target;if(!t.dataset||!t.dataset.calrange||screen!=="schedule"||!t.value||!/^\d{4}-\d{2}-\d{2}$/.test(t.value))return;if((t.dataset.calrange==="from"?window._calRF:window._calRT)===t.value)return;if(t.dataset.calrange==="from"){window._calRF=t.value;if(window._calRT&&window._calRT<t.value)window._calRT=t.value}else window._calRT=t.value;if(!window._calRF)window._calRF=calAnchor();clearTimeout(window._crT);window._crT=setTimeout(renderScreen,250)}));
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-calview],[data-calnav],[data-calday],[data-calmonth]");if(!b||screen!=="schedule")return;
  if(b.dataset.calmonth){window._calA=b.dataset.calmonth;window._calView="month";renderScreen();window.scrollTo({top:0});return}
  if(b.dataset.calview){window._calView=b.dataset.calview;try{localStorage.setItem(LKEY+"-calView",window._calView)}catch(x){}renderScreen();return}
@@ -3459,7 +3463,7 @@ const renderDetail=()=>renderScreen();
 function launchClock(){if(window._tcAsked)return;if(mode==="shared"&&!(window._tcLoaded&&me.ready&&teamLoaded))return;if(mode!=="shared"&&mode!=="local")return;window._tcAsked=1;if(!canField()||tcOpen(myId())||screen!=="home")return;window._tcLaunch=1;screen="time"}
 function clockChip(){const c=document.getElementById("clockChip");if(!c)return;if(!canField()||(mode==="shared"&&!window._tcLoaded)){c.hidden=true;return}const o=tcOpen(myId());c.hidden=false;
  c.className="badge clk "+(o?(onBreak(o)?"sample":"live"):"sample");c.textContent=o?`${onBreak(o)?"On break":"On the clock"} · ${jkLabel(o.job)}${o.code?" · "+o.code:""}`:"Not clocked in · tap to clock in"}
-const APP_VERSION="97",APP_DATE="Nov 10, 2026";
+const APP_VERSION="98",APP_DATE="Nov 10, 2026";
 function verStamp(){const el=document.getElementById("appVer");if(el)el.textContent=`App version ${APP_VERSION} · ${APP_DATE} · ${window._selfHost?"company server":mode==="shared"?"claude.ai":"this browser"}`}
 function renderScreen(){launchClock();verStamp();setTimeout(clockChip,0);
  applyTabs();
