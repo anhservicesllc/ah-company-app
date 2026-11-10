@@ -138,6 +138,8 @@ test('reminder choice is saved, shown, and used by "Add to my calendar"', async 
   await p.evaluate(() => go('schedule')); await p.waitForTimeout(300);
   await p.click('[data-apnew=""]'); await p.waitForTimeout(200);
   assert.equal(await p.$eval('#apRemind', e => e.value), '60', '1 hour by default');
+  const oc = await p.$eval('#apRemind option', o => { const c = getComputedStyle(o); return [c.color, c.backgroundColor]; });
+  assert.notEqual(oc[1], 'rgba(0, 0, 0, 0)', 'dropdown choices have their own background so the words show on a computer'); assert.notEqual(oc[0], oc[1]);
   await p.selectOption('#apRemind', '1440'); await p.fill('#apLabel', 'Reminder test');
   await p.selectOption('#apDur', '120'); await p.locator('#apDur').blur();
   /* a live update from another device must not wipe the form while it is being filled in (tablet: dropdown came up empty) */

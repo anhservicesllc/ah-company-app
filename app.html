@@ -50,6 +50,7 @@ h3{font-family:var(--display);font-size:1.05rem;font-weight:600;letter-spacing:.
 .stack{display:grid;gap:12px}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
 label{display:grid;gap:4px;font-size:.78rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+select option,select optgroup{color:var(--ink);background-color:var(--panel)}
 input,select,textarea{font:inherit;font-size:1rem;text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%;min-height:42px}
 [data-logask]{border-color:var(--accent);background:var(--accent-soft);margin-bottom:12px}
 input.aifill{background:var(--accent-soft);border-color:var(--accent)}
@@ -3469,7 +3470,7 @@ const renderDetail=()=>renderScreen();
 function launchClock(){if(window._tcAsked)return;if(mode==="shared"&&!(window._tcLoaded&&me.ready&&teamLoaded))return;if(mode!=="shared"&&mode!=="local")return;window._tcAsked=1;if(!canField()||tcOpen(myId())||screen!=="home")return;window._tcLaunch=1;screen="time"}
 function clockChip(){const c=document.getElementById("clockChip");if(!c)return;if(!canField()||(mode==="shared"&&!window._tcLoaded)){c.hidden=true;return}const o=tcOpen(myId());c.hidden=false;
  c.className="badge clk "+(o?(onBreak(o)?"sample":"live"):"sample");c.textContent=o?`${onBreak(o)?"On break":"On the clock"} · ${jkLabel(o.job)}${o.code?" · "+o.code:""}`:"Not clocked in · tap to clock in"}
-const APP_VERSION="99",APP_DATE="Nov 10, 2026";
+const APP_VERSION="100",APP_DATE="Nov 10, 2026";
 function verStamp(){const el=document.getElementById("appVer");if(el)el.textContent=`App version ${APP_VERSION} · ${APP_DATE} · ${window._selfHost?"company server":mode==="shared"?"claude.ai":"this browser"}`}
 function renderScreen(){launchClock();verStamp();setTimeout(clockChip,0);
  applyTabs();
