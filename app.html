@@ -156,6 +156,8 @@ details.guide ol{margin:6px 0 10px;padding-left:20px;display:grid;gap:4px}
 .board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:10px;overflow-x:auto;padding-bottom:8px}
 @media (max-width:640px){.board{grid-auto-flow:row;grid-auto-columns:auto}}
 .jlist{display:none;gap:8px}
+.selfind{margin:0 0 4px;min-height:36px;padding:6px 10px;font-size:.9rem}
+.selfind+select{margin-top:0}
 .mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
 .mhead{font-size:.72rem;font-weight:700;color:var(--muted);text-align:center;padding:2px 0}
 .mcell{min-height:92px;border:1px solid var(--line);border-radius:6px;padding:3px;background:var(--panel);min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -164,6 +166,7 @@ details.guide ol{margin:6px 0 10px;padding-left:20px;display:grid;gap:4px}
 .mitem{display:block;width:100%;text-align:left;border:0;border-left:3px solid var(--accent);background:var(--bg);padding:1px 4px;font:inherit;font-size:.72rem;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:inherit;border-radius:3px}
 .mmore{font-size:.7rem;color:var(--muted);border:0;background:none;text-align:left;padding:0 2px;cursor:pointer}
 .m3 .mcell{min-height:58px}.m3 .mitem{font-size:.68rem}
+.msmall .mcell{min-height:34px;padding:1px}.msmall .mitem{font-size:0;height:5px;padding:0;margin-top:1px}.msmall .mday{font-size:.68rem}.msmall .mhead{font-size:.62rem}
 @media (max-width:640px){.mcell{min-height:56px;padding:2px}.mitem{font-size:0;height:6px;padding:0;margin-top:1px}.m3 .mitem{height:5px}}
 .savebar{position:sticky;bottom:0;z-index:4;display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:12px;box-shadow:0 -2px 10px rgba(0,0,0,.06)}
 .savebar .note{flex:1 1 140px}
@@ -1461,6 +1464,10 @@ const calOf=a=>a.cal||(a.kind==="Delivery"?"cal-vendor":["Install start","Servic
 function calOn(){if(!window._calOn){let v=null;try{v=JSON.parse(localStorage.getItem(LKEY+"-calOn")||"null")}catch(x){}window._calOn=Array.isArray(v)?v:null}const seen=calsSeen().map(c=>c.id);return window._calOn?window._calOn.filter(id=>seen.includes(id)):seen}
 function calSetOn(L){window._calOn=L;try{localStorage.setItem(LKEY+"-calOn",JSON.stringify(L))}catch(x){}}
 const apVendor=a=>a.vendorId?subs.find(v=>v.id===a.vendorId):null;
+/* reminders: minutes before the start; older appointments default to 1 hour */
+const AP_REMIND=[[0,"No reminder"],[15,"15 minutes before"],[30,"30 minutes before"],[60,"1 hour before"],[120,"2 hours before"],[1440,"1 day before"],[2880,"2 days before"]];
+const apRemind=a=>a.remind===undefined||a.remind===null||a.remind===""?60:+a.remind;
+const apRemindLabel=a=>{const r=apRemind(a);return r?(AP_REMIND.find(x=>x[0]===r)||[0,r+" min before"])[1]:""};
 /* names on an appointment: sign-ins, employees (those with a sign-in shown once), and typed names */
 function apWhoNames(a){const st=(a.staffIds||[]).map((id,i)=>({uid:(staffById(id)||{}).uid,n:stName(id,(a.staffNames||[])[i])}));const su=new Set(st.map(x=>x.uid).filter(Boolean));
  return [...(a.who||[]).filter(u=>!su.has(u)).map(pname),...st.map(x=>x.n),a.whoText].filter(Boolean).join(", ")}
@@ -1485,13 +1492,13 @@ const apToday=()=>appts.filter(a=>a.date===ldate()&&apActive(a)).sort((a,b)=>toM
 function icsText(a){const pad=n=>String(n).padStart(2,"0"),d=a.date.replace(/-/g,""),st=toMin(a.time||"09:00"),en=Math.min(st+(+a.dur||60),23*60+59);
  const T=m=>`${d}T${pad(Math.floor(m/60))}${pad(m%60)}00`,X=t=>String(t||"").replace(/\\/g,"\\\\").replace(/[,;]/g,c=>"\\"+c).replace(/\r?\n/g,"\\n");
  const stamp=new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z";
- return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//A&H Services//App//EN","BEGIN:VEVENT",`UID:${a.id}@anh-app`,`DTSTAMP:${stamp}`,a.time?`DTSTART:${T(st)}`:`DTSTART;VALUE=DATE:${d}`,a.time?`DTEND:${T(en)}`:`DTEND;VALUE=DATE:${addDays(a.date,1).replace(/-/g,"")}`,`SUMMARY:${X(a.kind+(apTitle(a)?" – "+apTitle(a):""))}`,`LOCATION:${X(apLoc(a))}`,`DESCRIPTION:${X(a.notes||"")}`,"BEGIN:VALARM","TRIGGER:-PT60M","ACTION:DISPLAY","DESCRIPTION:Reminder","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n")}
+ return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//A&H Services//App//EN","BEGIN:VEVENT",`UID:${a.id}@anh-app`,`DTSTAMP:${stamp}`,a.time?`DTSTART:${T(st)}`:`DTSTART;VALUE=DATE:${d}`,a.time?`DTEND:${T(en)}`:`DTEND;VALUE=DATE:${addDays(a.date,1).replace(/-/g,"")}`,`SUMMARY:${X(a.kind+(apTitle(a)?" – "+apTitle(a):""))}`,`LOCATION:${X(apLoc(a))}`,`DESCRIPTION:${X(a.notes||"")}`,...(apRemind(a)?["BEGIN:VALARM",`TRIGGER:-PT${apRemind(a)}M`,"ACTION:DISPLAY","DESCRIPTION:Reminder","END:VALARM"]:[]),"END:VEVENT","END:VCALENDAR"].join("\r\n")}
 function apMsg(a,c){const first=firstName(c);return `Hi ${first}, this is ${CO().name} confirming your ${a.kind.toLowerCase()} on ${dayName(a.date)}${a.time?" at "+fmtTime(a.time):""}. Reply YES to confirm, ${CO().phone?"or call "+CO().phone+" to reschedule":"or reply with a better time"}. Thank you!`}
 const smsHref=(a,c)=>`sms:${String(c.phone).replace(/[^\d+]/g,"")}?&body=${encodeURIComponent(apMsg(a,c))}`;
 const mailHref=(a,c)=>`mailto:${encodeURIComponent(c.email)}?subject=${encodeURIComponent(a.kind+" confirmation – "+dayName(a.date))}&body=${encodeURIComponent(apMsg(a,c))}`;
 function apCard(a){const J=apJob(a),c=apCust(a),loc=apLoc(a),C=calById(calOf(a)),ed=calCan(C,"edit"),cr=a.crewId&&crewById(a.crewId),vd=apVendor(a);
  return `<div class="bcard" style="min-width:0;overflow-wrap:anywhere;border-left:5px solid ${esc(C.color)}"><span class="note" style="margin:0;color:${esc(C.color)};font-weight:600">${esc(C.name)}</span>${cr?`<span class="note" style="margin:0">Crew: ${esc(cr.name)}</span>`:""}${vd?`<span class="note" style="margin:0">Vendor: ${esc(vd.name||"")}</span>`:""}<div class="actions" style="justify-content:space-between"><strong>${esc(fmtTime(a.time))} · ${esc(a.kind)}</strong><span class="pill ${a.status==="Confirmed"?"green":a.status==="Canceled"||a.status==="No-show"?"red":a.status==="Done"?"":"amber"}">${esc(a.status)}</span></div>
- ${apTitle(a)?`<span>${esc(apTitle(a))}</span>`:""}${(()=>{const n=apWhoNames(a);return n?`<span class="note">${esc(n)}</span>`:""})()}
+ ${apTitle(a)?`<span>${esc(apTitle(a))}</span>`:""}${(()=>{const n=apWhoNames(a);return n?`<span class="note">${esc(n)}</span>`:""})()}${apRemind(a)&&!["Done","Canceled","No-show"].includes(a.status)?`<span class="note">🔔 ${esc(apRemindLabel(a))}</span>`:""}
  ${loc?`<a class="note" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}" target="_blank" rel="noopener">${esc(loc)}</a>`:""}${a.notes?`<span class="note">${esc(a.notes)}</span>`:""}
  ${apOverlap(a)?'<span class="pill red" title="Same person is booked at an overlapping time">Time overlap</span>':""}
  <div class="actions">${ed?`<select data-apst="${esc(a.id)}" aria-label="Status" style="width:auto">${AP_STATUS.map(x=>`<option${a.status===x?" selected":""}>${x}</option>`).join("")}</select>`:""}<button class="btn small" type="button" data-apics="${esc(a.id)}">Add to my calendar</button>${c&&c.phone&&!c.dnc?`<a class="btn small" href="${esc(smsHref(a,c))}">Text customer</a>`:""}${c&&c.email&&!c.dnc?`<a class="btn small" href="${esc(mailHref(a,c))}">Email customer</a>`:""}${ed?`<button class="btn small" type="button" data-apedit="${esc(a.id)}">Change</button>`:""}${J&&J.kind==="est"?`<button class="btn small" type="button" data-open="${esc(J.obj.id)}">Open estimate</button>`:""}</div></div>`}
@@ -1509,6 +1516,8 @@ function apForm(a){const members=mode==="shared"&&team.length?team.filter(m=>m.a
  ${(()=>{const mid=new Set(members.map(m=>m.id)),S=[...new Set([...actStaff().filter(x=>!x.uid||!mid.has(x.uid)).map(x=>x.id),...(a.staffIds||[])])];
   return `<div><h3>Who goes</h3>${members.length||S.length?`<div class="checks">${members.map(m=>`<label class="check"><input type="checkbox" data-apwho="${esc(m.id)}" ${(a.who||[]).includes(m.id)?"checked":""}>${esc(pname(m.id))}</label>`).join("")}${S.map(id=>`<label class="check"><input type="checkbox" data-apstaff="${esc(id)}" ${(a.staffIds||[]).includes(id)?"checked":""}>${esc(stName(id))}</label>`).join("")}</div>`:`<p class="note" style="margin:0">Add employees under Time → Employees to tick them here.</p>`}
   <label style="margin-top:6px">Anyone else (type names)<input id="apWhoText" value="${esc(a.whoText||"")}" placeholder="e.g. plumber, Home Depot rep"></label></div>`})()}
+ <div class="fields"><label>Reminder<select id="apRemind">${AP_REMIND.map(([m,l])=>`<option value="${m}"${apRemind(a)===m?" selected":""}>${l}</option>`).join("")}</select></label></div>
+ <p class="note" style="margin:-4px 0 0">Everyone ticked under Who goes gets the reminder by email from the company server, and on their phone if they tap "Add to my calendar".</p>
  <label>Notes (gate code, what to bring, who to ask for)<input id="apNotes" value="${esc(a.notes||"")}"></label>
  <div class="actions"><button class="btn primary" type="button" data-apsave="1">Save appointment</button><button class="btn" type="button" data-apcancel="1">Cancel</button></div></div>`}
 function calChips(){const on=calOn(),S=calsSeen();return `<div class="actions" style="gap:6px;margin-bottom:10px;flex-wrap:wrap"><button type="button" class="btn small${on.length===S.length?" primary":""}" data-calall="1">Master (all ${S.length})</button>${S.map(c=>`<button type="button" class="btn small" data-caltog="${esc(c.id)}" aria-pressed="${on.includes(c.id)}" style="${on.includes(c.id)?`background:${esc(c.color)};border-color:${esc(c.color)};color:#fff`:`border-color:${esc(c.color)};color:${esc(c.color)}`}">${on.includes(c.id)?"✓ ":""}${esc(c.name)}</button>`).join("")}${staffAccess()?`<button type="button" class="btn small" data-calmanage="1" style="margin-left:auto">Manage calendars</button>`:""}</div>`}
@@ -1526,11 +1535,12 @@ function scheduleHtml(){const ws=weekStart(calAnchor()),days=[0,1,2,3,4,5,6].map
  const people=[...new Set(appts.flatMap(a=>a.who||[]))];wantNames(people);
  const due=fuDue(),soon=ests.filter(e=>{const n=fuNext(e);return n&&n>ldate()&&n<=addDays(ldate(),3)}).length;
  const ed=role()!=="view";
- return `<div class="hero"><div><h2 style="margin:0">Calendar</h2><p class="lede" style="margin:4px 0 0">Every appointment on its calendar: estimators, field, vendors and deliveries, office and crews. Tap calendars to show or hide them; Master shows all of yours. "Add to my calendar" puts one on your phone with a 1-hour reminder.</p></div>${ed&&calsEdit().length?`<button class="btn primary big" type="button" data-apnew="">+ New appointment</button>`:""}</div>
+ return `<div class="hero"><div><h2 style="margin:0">Calendar</h2><p class="lede" style="margin:4px 0 0">Every appointment on its calendar: estimators, field, vendors and deliveries, office and crews. Tap calendars to show or hide them; Master shows all of yours. Pick how far to look: a day up to a year, or your own dates. Each appointment can send a reminder by email, and "Add to my calendar" puts it on your phone with the same reminder.</p></div>${ed&&calsEdit().length?`<button class="btn primary big" type="button" data-apnew="">+ New appointment</button>`:""}</div>
  ${window._calManage&&staffAccess()?calManageHtml():""}${window._apEdit?apForm(window._apEdit):""}
  ${calChips()}
  ${(()=>{const V=calView(),A=calAnchor(),R=calRange(V,A);
-  return `<div class="tiers" role="group" aria-label="Calendar view" style="grid-template-columns:repeat(5,1fr);max-width:520px;margin-bottom:8px">${[["day","Day"],["week","Week"],["month","Month"],["3m","3 months"],["list","List"]].map(([k,l])=>`<button type="button" data-calview="${k}" aria-pressed="${V===k}">${l}</button>`).join("")}</div>
+  return `<div class="tiers calviews" role="group" aria-label="Calendar view" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${CAL_VIEWS.map(([k,l])=>`<button type="button" data-calview="${k}" aria-pressed="${V===k}" style="flex:1 1 auto">${l}</button>`).join("")}</div>
+ ${V==="range"?`<div class="fields" style="max-width:520px;margin-bottom:6px"><label>From<input type="date" data-calrange="from" value="${esc(R.from)}"></label><label>To<input type="date" data-calrange="to" value="${esc(R.to)}"></label></div>`:""}
  <div class="actions" style="margin-bottom:10px"><button class="btn small" type="button" data-calnav="-1" aria-label="Back">‹</button><button class="btn small" type="button" data-calnav="0">Today</button><button class="btn small" type="button" data-calnav="1" aria-label="Forward">›</button><strong style="margin-left:6px">${esc(R.title)}</strong>
  <select data-apf="1" aria-label="Show" style="width:auto;margin-left:auto"><option value="all"${F==="all"?" selected":""}>Everyone</option><option value="mine"${F==="mine"?" selected":""}>Just me</option>${people.map(p=>`<option value="${esc(p)}"${F===p?" selected":""}>${esc(pname(p))}</option>`).join("")}</select></div>
  ${calBody(V,A,R,pick)}`})()}
@@ -1550,6 +1560,7 @@ function apReadForm(a){const v=id=>document.getElementById(id);const prev={date:
  a.kind=v("apKind").value;a.date=v("apDate").value||a.date;a.time=v("apTime").value;a.dur=+v("apDur").value||60;a.link=v("apLink").value;a.label=v("apLabel").value.trim();a.loc=v("apLoc").value.trim();a.notes=v("apNotes").value.trim();
  const W=[...document.querySelectorAll("[data-apwho]")];if(W.length)a.who=W.filter(x=>x.checked).map(x=>x.dataset.apwho);a.whoText=(v("apWhoText")?.value||"").trim();
  const SW=[...document.querySelectorAll("[data-apstaff]")];if(SW.length){a.staffIds=SW.filter(x=>x.checked).map(x=>x.dataset.apstaff);a.staffNames=a.staffIds.map(id=>stName(id));const uids=a.staffIds.map(id=>(staffById(id)||{}).uid).filter(Boolean);if(uids.length)a.who=[...new Set([...(a.who||[]),...uids])]}
+ if(v("apRemind"))a.remind=+v("apRemind").value;try{a.tz=Intl.DateTimeFormat().resolvedOptions().timeZone||""}catch(x){}
  if(v("apCal"))a.cal=v("apCal").value;a.crewId=v("apCrew")?v("apCrew").value:(a.crewId||"");a.vendorId=v("apVendor")?v("apVendor").value:(a.vendorId||"");
  const cr=a.crewId&&crewById(a.crewId);if(cr){a.crewName=cr.name;const uids=(cr.members||[]).map(id=>(staffById(id)||{}).uid).filter(Boolean);if(uids.length)a.who=[...new Set([...(a.who||[]),...uids])]}
  return prev}
@@ -2404,7 +2415,8 @@ document.addEventListener("change",async ev=>{const t=ev.target;if(screen!=="sch
  await saveItem("calendars",c);renderScreen()});
 
 /* calendar views: day, week, month, 3 months, list (next 30 days); the view is remembered on this device */
-function calView(){if(!window._calView){let v="";try{v=localStorage.getItem(LKEY+"-calView")||""}catch(x){}window._calView=["day","week","month","3m","list"].includes(v)?v:"week"}return window._calView}
+const CAL_VIEWS=[["day","Day"],["week","Week"],["month","Month"],["3m","3 months"],["6m","6 months"],["year","Year"],["list","Next 30 days"],["range","Pick dates"]];
+function calView(){if(!window._calView){let v="";try{v=localStorage.getItem(LKEY+"-calView")||""}catch(x){}window._calView=CAL_VIEWS.some(c=>c[0]===v)?v:"week"}return window._calView}
 const calAnchor=()=>window._calA||ldate();
 const ymd=(y,m,d)=>ldateOf(new Date(y,m,d,12));
 const monthStart=d=>{const x=new Date(d+"T12:00:00");return ymd(x.getFullYear(),x.getMonth(),1)};
@@ -2413,7 +2425,9 @@ const monthName=d=>new Date(d+"T12:00:00").toLocaleDateString(undefined,{month:"
 function calRange(V,A){if(V==="day")return {from:A,to:A,title:dayName(A)};
  if(V==="week"){const w=weekStart(A);return {from:w,to:addDays(w,6),title:fmtDate(w)+" to "+fmtDate(addDays(w,6))}}
  if(V==="month"){const m=monthStart(A);return {from:m,to:addDays(addMonths(m,1),-1),title:monthName(m)}}
- if(V==="3m"){const m=monthStart(A);return {from:m,to:addDays(addMonths(m,3),-1),title:monthName(m)+" – "+monthName(addMonths(m,2))}}
+ if(V==="3m"||V==="6m"){const k=V==="3m"?3:6,m=monthStart(A);return {from:m,to:addDays(addMonths(m,k),-1),title:monthName(m)+" – "+monthName(addMonths(m,k-1))}}
+ if(V==="year"){const y=A.slice(0,4);return {from:y+"-01-01",to:y+"-12-31",title:y}}
+ if(V==="range"){const f=window._calRF||A,t=window._calRT&&window._calRT>=f?window._calRT:addDays(f,13);return {from:f,to:t,title:fmtDate(f)+" to "+fmtDate(t)}}
  return {from:A,to:addDays(A,29),title:"Next 30 days from "+fmtDate(A)}}
 const apOn=(d,pick)=>appts.filter(a=>a.date===d&&pick(a)).sort((a,b)=>toMin(a.time)-toMin(b.time));
 function monthGrid(m,pick,max){const first=m,last=addDays(addMonths(m,1),-1);let d=weekStart(first);const cells=[];
@@ -2426,13 +2440,36 @@ function calBody(V,A,R,pick){
  if(V==="week"){const days=[0,1,2,3,4,5,6].map(i=>addDays(R.from,i));
   return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;align-items:start">${days.map(d=>{const L=apOn(d,pick);return `<div class="bcol" style="min-width:0${d===ldate()?";border-color:var(--accent)":""}"><h3 style="margin:0"><button type="button" class="linkbtn" data-calday="${d}">${esc(dayName(d))}</button>${d===ldate()?' <span class="pill">Today</span>':""}</h3>${L.map(apCard).join("")||'<p class="note" style="margin:0">Nothing booked.</p>'}</div>`}).join("")}</div>`}
  if(V==="month")return monthGrid(R.from,pick,3)+`<p class="note">Tap a day to see it; tap an appointment to open it.</p>`;
- if(V==="3m")return `<div class="m3 stack" style="gap:14px">${[0,1,2].map(i=>{const m=addMonths(R.from,i);return `<div><h3 style="margin:0 0 4px">${esc(monthName(m))} <span class="count">${appts.filter(a=>a.date>=m&&a.date<=addDays(addMonths(m,1),-1)&&pick(a)).length}</span></h3>${monthGrid(m,pick,2)}</div>`}).join("")}</div>`;
+ if(V==="3m"||V==="6m"||V==="year"){const k=V==="3m"?3:V==="6m"?6:12,cls=V==="3m"?"m3":"m3 msmall";
+  return `<div class="${cls}" style="display:grid;gap:14px;grid-template-columns:${V==="3m"?"1fr":"repeat(auto-fill,minmax(300px,1fr))"}">${Array.from({length:k},(_,i)=>{const m=addMonths(R.from,i);return `<div><h3 style="margin:0 0 4px"><button type="button" class="linkbtn" data-calmonth="${m}">${esc(monthName(m))}</button> <span class="count">${appts.filter(a=>a.date>=m&&a.date<=addDays(addMonths(m,1),-1)&&pick(a)).length}</span></h3>${monthGrid(m,pick,V==="3m"?2:1)}</div>`}).join("")}</div>`}
  const out=[];for(let d=R.from;d<=R.to;d=addDays(d,1)){const L=apOn(d,pick);if(L.length)out.push(`<div class="bcol"><h3 style="margin:0">${esc(dayName(d))}</h3>${L.map(apCard).join("")}</div>`)}
- return `<div class="stack" style="gap:10px;max-width:760px">${out.join("")||'<p class="note">Nothing booked in the next 30 days.</p>'}</div>`}
-document.addEventListener("click",ev=>{const b=ev.target.closest("[data-calview],[data-calnav],[data-calday]");if(!b||screen!=="schedule")return;
+ return `<div class="stack" style="gap:10px;max-width:760px">${out.join("")||`<p class="note">Nothing booked ${V==="range"?"between those dates":"in the next 30 days"}.</p>`}</div>`}
+document.addEventListener("change",ev=>{const t=ev.target;if(!t.dataset||!t.dataset.calrange||screen!=="schedule"||!t.value)return;if(t.dataset.calrange==="from"){window._calRF=t.value;if(window._calRT&&window._calRT<t.value)window._calRT=t.value}else window._calRT=t.value;if(!window._calRF)window._calRF=calAnchor();renderScreen()});
+document.addEventListener("click",ev=>{const b=ev.target.closest("[data-calview],[data-calnav],[data-calday],[data-calmonth]");if(!b||screen!=="schedule")return;
+ if(b.dataset.calmonth){window._calA=b.dataset.calmonth;window._calView="month";renderScreen();window.scrollTo({top:0});return}
  if(b.dataset.calview){window._calView=b.dataset.calview;try{localStorage.setItem(LKEY+"-calView",window._calView)}catch(x){}renderScreen();return}
- if(b.dataset.calnav!==undefined){const n=+b.dataset.calnav,V=calView(),A=calAnchor();window._calA=!n?ldate():V==="day"?addDays(A,n):V==="week"?addDays(A,7*n):V==="month"?addMonths(A,n):V==="3m"?addMonths(A,3*n):addDays(A,30*n);renderScreen();return}
+ if(b.dataset.calnav!==undefined){const n=+b.dataset.calnav,V=calView(),A=calAnchor();window._calA=!n?ldate():V==="day"?addDays(A,n):V==="week"?addDays(A,7*n):V==="month"?addMonths(A,n):V==="3m"?addMonths(A,3*n):V==="6m"?addMonths(A,6*n):V==="year"?addMonths(A,12*n):V==="range"?(()=>{const R=calRange("range",A),len=Math.round((new Date(R.to)-new Date(R.from))/864e5)+1;window._calRF=addDays(R.from,len*n);window._calRT=addDays(R.to,len*n);return window._calRF})():addDays(A,30*n);if(!n){window._calRF=null;window._calRT=null}renderScreen();return}
  if(b.dataset.calday){window._calA=b.dataset.calday;window._calView="day";renderScreen();window.scrollTo({top:0})}});
+function apDueCheck(){const me0=myId();if(!me0)return;const now=Date.now();let seen=[];try{seen=JSON.parse(localStorage.getItem(LKEY+"-remSeen")||"[]")}catch(x){}
+ const due=appts.filter(a=>(a.who||[]).includes(me0)&&a.time&&apRemind(a)&&!["Done","Canceled","No-show"].includes(a.status)).filter(a=>{const t=new Date(a.date+"T"+a.time+":00").getTime();return now>=t-apRemind(a)*6e4&&now<t&&!seen.includes(a.id+"@"+a.date+a.time)});
+ if(!due.length)return;const a=due[0];toast(`🔔 Reminder: ${fmtTime(a.time)} ${a.kind}${apTitle(a)?" – "+apTitle(a):""}`);seen.push(a.id+"@"+a.date+a.time);try{localStorage.setItem(LKEY+"-remSeen",JSON.stringify(seen.slice(-200)))}catch(x){}}
+setInterval(()=>{try{apDueCheck()}catch(x){}},60e3);
+/* type-to-find on long dropdowns (vendors, customers, jobs…): a small box above the list narrows it as you type */
+function selFind(sel){if(sel._findOn||sel.multiple||sel.options.length<16||sel.closest("[data-nofind]"))return;sel._findOn=true;
+ const all=[...sel.options].map(o=>({v:o.value,t:o.textContent,dis:o.disabled}));const blank=all.filter(o=>o.v==="");
+ const box=document.createElement("input");box.type="search";box.className="selfind";box.placeholder="Type to find…";box.setAttribute("aria-label","Type to find in the list below");box.autocomplete="off";
+ sel.parentNode.insertBefore(box,sel);
+ const fill=q=>{const cur=sel.value,w=q.toLowerCase().split(/\s+/).filter(Boolean);
+  const hit=all.filter(o=>o.v!==""&&w.every(x=>o.t.toLowerCase().includes(x)));
+  const show=w.length?[...blank,...hit]:all;
+  if(w.length&&!show.some(o=>o.v===cur)){const c=all.find(o=>o.v===cur);if(c)show.unshift(c)}
+  sel.innerHTML="";show.forEach(o=>{const x=document.createElement("option");x.value=o.v;x.textContent=o.t;x.disabled=o.dis;sel.appendChild(x)});sel.value=cur;
+  box.title=w.length?hit.length+" match"+(hit.length===1?"":"es"):"";
+  return hit};
+ const pick=v=>{if(sel.value===v)return;sel.value=v;sel.dispatchEvent(new Event("change",{bubbles:true}))};
+ box.addEventListener("input",()=>{const hit=fill(box.value);if(hit.length===1)pick(hit[0].v)});
+ box.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const hit=fill(box.value);if(hit[0])pick(hit[0].v)}});}
+new MutationObserver(()=>document.querySelectorAll("#screen select").forEach(selFind)).observe(document.getElementById("screen"),{childList:true,subtree:true});
 /* ---------- employees and crews ---------- */
 const pplF=()=>(window._pf=window._pf||{show:"active",q:""});
 function crewCard(c){const ed=canOffice(),mem=(c.members||[]),open=window._pcOpen===c.id;
@@ -3422,7 +3459,7 @@ const renderDetail=()=>renderScreen();
 function launchClock(){if(window._tcAsked)return;if(mode==="shared"&&!(window._tcLoaded&&me.ready&&teamLoaded))return;if(mode!=="shared"&&mode!=="local")return;window._tcAsked=1;if(!canField()||tcOpen(myId())||screen!=="home")return;window._tcLaunch=1;screen="time"}
 function clockChip(){const c=document.getElementById("clockChip");if(!c)return;if(!canField()||(mode==="shared"&&!window._tcLoaded)){c.hidden=true;return}const o=tcOpen(myId());c.hidden=false;
  c.className="badge clk "+(o?(onBreak(o)?"sample":"live"):"sample");c.textContent=o?`${onBreak(o)?"On break":"On the clock"} · ${jkLabel(o.job)}${o.code?" · "+o.code:""}`:"Not clocked in · tap to clock in"}
-const APP_VERSION="96",APP_DATE="Nov 10, 2026";
+const APP_VERSION="97",APP_DATE="Nov 10, 2026";
 function verStamp(){const el=document.getElementById("appVer");if(el)el.textContent=`App version ${APP_VERSION} · ${APP_DATE} · ${window._selfHost?"company server":mode==="shared"?"claude.ai":"this browser"}`}
 function renderScreen(){launchClock();verStamp();setTimeout(clockChip,0);
  applyTabs();

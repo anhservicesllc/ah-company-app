@@ -98,8 +98,52 @@ test('month, 3-month, day and list views; tap a day to open it', async () => {
   await p.click(`.m3 [data-calday="${today}"]`); await p.waitForTimeout(200);
   assert.equal(await p.evaluate(() => calView()), 'day');
   assert.match(await shown(p), /Visit Smith/);
+  await p.click('[data-calview="6m"]'); await p.waitForTimeout(200);
+  assert.equal(await p.$$eval('.mgrid', g => g.length), 6);
+  await p.click('[data-calview="year"]'); await p.waitForTimeout(200);
+  assert.equal(await p.$$eval('.mgrid', g => g.length), 12);
+  await p.click('[data-calview="range"]'); await p.waitForTimeout(200);
+  await p.fill('[data-calrange="from"]', today); await p.locator('[data-calrange="from"]').dispatchEvent('change'); await p.waitForTimeout(200);
+  assert.match(await shown(p), /Install Jones/);
   await p.click('[data-calview="list"]'); await p.waitForTimeout(200);
   assert.match(await shown(p), /Install Jones/);
+  assert.deepEqual(app.errors, []);
+  await app.close();
+});
+
+test('long dropdowns: type a few letters to find a vendor; one match picks it', async () => {
+  const s = seed();
+  for (let i = 0; i < 40; i++) s['subs/V-' + i] = { name: (i === 17 ? 'Las Vegas Tile Supply' : 'Vendor ' + String(i).padStart(2, '0')) };
+  const app = await openApp({ seed: s, role: 'office' });
+  const p = app.page;
+  await p.evaluate(() => go('schedule')); await p.waitForTimeout(300);
+  await p.click('[data-apnew=""]'); await p.waitForTimeout(300);
+  const box = p.locator('#apVendor').locator('xpath=preceding-sibling::input[contains(@class,"selfind")]');
+  assert.equal(await box.count(), 1, 'find box shown above the vendor list');
+  await box.fill('vendor 0'); await p.waitForTimeout(100);
+  assert.equal(await p.$$eval('#apVendor option', o => o.filter(x => x.value).length), 13, 'narrowed: every word must appear (00–09, 10, 20, 30)');
+  await box.fill('tile'); await p.waitForTimeout(100);
+  assert.equal(await p.$eval('#apVendor', e => e.value), 'V-17', 'single match picked');
+  await p.fill('#apLabel', 'Tile delivery 2'); await p.click('[data-apsave]'); await p.waitForTimeout(300);
+  assert.equal(await p.evaluate(() => appts.find(a => a.label === 'Tile delivery 2').vendorId), 'V-17');
+  assert.deepEqual(app.errors, []);
+  await app.close();
+});
+
+test('reminder choice is saved, shown, and used by "Add to my calendar"', async () => {
+  const app = await openApp({ seed: seed(), role: 'office' });
+  const p = app.page;
+  await p.evaluate(() => go('schedule')); await p.waitForTimeout(300);
+  await p.click('[data-apnew=""]'); await p.waitForTimeout(200);
+  assert.equal(await p.$eval('#apRemind', e => e.value), '60', '1 hour by default');
+  await p.selectOption('#apRemind', '1440'); await p.fill('#apLabel', 'Reminder test');
+  await p.click('[data-apsave]'); await p.waitForTimeout(300);
+  const r = await p.evaluate(() => { const a = appts.find(x => x.label === 'Reminder test'); return { remind: a.remind, tz: !!a.tz, ics: icsText(a) }; });
+  assert.equal(r.remind, 1440); assert.ok(r.tz);
+  assert.match(r.ics, /TRIGGER:-PT1440M/);
+  assert.match(await shown(p), /1 day before/);
+  const none = await p.evaluate(() => icsText({ ...appts[0], remind: 0 }));
+  assert.doesNotMatch(none, /VALARM/);
   assert.deepEqual(app.errors, []);
   await app.close();
 });

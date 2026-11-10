@@ -147,6 +147,23 @@ test('daily training email: sends records with names; wrong password reported', 
   assert.equal(saved.pass, 'right-password', 'password kept on the server only');
 });
 
+test('appointment reminder emails go to the people booked, once', async t => {
+  if (!smtp) { t.skip('no test mail server'); return; }
+  const me = await (await member.go('/api/me')).json();
+  const at = new Date(Date.now() + 30 * 60e3), date = at.toISOString().slice(0, 10), time = at.toISOString().slice(11, 16);
+  const later = new Date(Date.now() + 5 * 3600e3);
+  await owner.json('/api/doc?path=appts/A-rem1', 'PUT', { kind: 'Estimate visit', label: 'Smith', date, time, tz: 'UTC', remind: 60, who: [me.id], status: 'Scheduled', loc: '1 Test St' });
+  await owner.json('/api/doc?path=appts/A-rem2', 'PUT', { kind: 'Install start', label: 'Later job', date: later.toISOString().slice(0, 10), time: later.toISOString().slice(11, 16), tz: 'UTC', remind: 60, who: [me.id], status: 'Scheduled' });
+  await owner.json('/api/doc?path=appts/A-rem3', 'PUT', { kind: 'Estimate visit', label: 'No reminder', date, time, tz: 'UTC', remind: 0, who: [me.id], status: 'Scheduled' });
+  const before = mails.length;
+  let r = await owner.form('/admin/reminders', {});
+  assert.match(decodeURIComponent(r.headers.get('location')), /Sent 1 reminder/);
+  assert.equal(mails.length, before + 1);
+  assert.match(mails.at(-1), /To: tech@test\.local/); const subj = (mails.at(-1).match(/Subject: =\?UTF-8\?B\?([^?]+)\?=/) || [])[1]; assert.match(Buffer.from(subj || '', 'base64').toString(), /^Reminder: Estimate visit – Smith/);
+  r = await owner.form('/admin/reminders', {});
+  assert.match(decodeURIComponent(r.headers.get('location')), /No reminders due/, 'never sent twice');
+});
+
 test('data stays outside the app folder', async () => {
   assert.ok(fs.existsSync(path.join(dataDir, 'db')));
   assert.ok(!fs.existsSync(path.join(ROOT, 'data', 'db', 'training')), 'nothing written beside server.js');
