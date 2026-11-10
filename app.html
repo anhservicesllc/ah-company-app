@@ -1578,6 +1578,11 @@ document.addEventListener("click",async ev=>{const X=q=>ev.target.closest(q);let
  if(b=X("[data-fulog]")){const e=ests.find(x=>x.id===b.dataset.fulog);if(!e)return;const how=$("#fuHow").value,res=$("#fuRes").value,note=$("#fuNote").value.trim(),nx=$("#fuNextIn").value;
   e.fu=[...(e.fu||[]),{date:ldate(),how,result:res,note,by:myId(),at:now()}];e.fuNext=nx||"";log(e,`Follow-up by ${how.toLowerCase()}: ${res}${note?" – "+note:""}`);await save(e);renderScreen();
   toast(res==="Ready to sign"?"Logged. Mark it Won when they sign.":res==="Not interested"?"Logged. Mark it Lost if they've decided.":"Follow-up logged");return}});
+const AP_DRAFT={apKind:"kind",apDate:"date",apTime:"time",apDur:"dur",apCal:"cal",apCrew:"crewId",apVendor:"vendorId",apLink:"link",apLabel:"label",apLoc:"loc",apWhoText:"whoText",apRemind:"remind",apNotes:"notes"};
+["input","change"].forEach(n=>document.addEventListener(n,ev=>{const t=ev.target,a=window._apEdit;if(!a||screen!=="schedule"||!t||!t.closest||!t.closest("#screen"))return;
+ const k=AP_DRAFT[t.id];if(k){a[k]=k==="dur"||k==="remind"?+t.value:t.value;return}
+ if(t.dataset.apwho){const s=new Set(a.who||[]);t.checked?s.add(t.dataset.apwho):s.delete(t.dataset.apwho);a.who=[...s];return}
+ if(t.dataset.apstaff){const s=new Set(a.staffIds||[]);t.checked?s.add(t.dataset.apstaff):s.delete(t.dataset.apstaff);a.staffIds=[...s]}},true));
 document.addEventListener("change",async ev=>{const t=ev.target;
  if(t.dataset.apf){window._apF=t.value;renderScreen();return}
  if(t.dataset.apst){const a=appts.find(x=>x.id===t.dataset.apst);if(!a||role()==="view")return;const old=a.status;a.status=t.value;a.hist=[...(a.hist||[]),{at:now(),by:myId(),t:`${old} → ${a.status}`}];await saveItem("appts",a);
@@ -3456,6 +3461,7 @@ function render(fromSnap){
  if(fromSnap&&Date.now()-(window._lp||0)<1200){clearTimeout(window._rsT);window._rsT=setTimeout(()=>render(true),1300);return}
  if(fromSnap&&screen==="dlog1"){const L=dlCur();if(L&&dlCanEdit(L))return}
  if(fromSnap&&screen==="wizard"&&$("#screen").contains(document.activeElement)){updateProgress();return}
+ if(fromSnap&&screen==="schedule"&&window._apEdit)return;
  if(fromSnap&&["home1","account","wo","camp","inv","job","newjob","people","new","dlog","schedule","time","vendors","sign","training","trquiz"].includes(screen)&&($("#screen").contains(document.activeElement)||Date.now()-(window._ptrDown||0)<700||Date.now()-(window._lastEdit||0)<1500))return;
  renderScreen();
 }
@@ -3463,7 +3469,7 @@ const renderDetail=()=>renderScreen();
 function launchClock(){if(window._tcAsked)return;if(mode==="shared"&&!(window._tcLoaded&&me.ready&&teamLoaded))return;if(mode!=="shared"&&mode!=="local")return;window._tcAsked=1;if(!canField()||tcOpen(myId())||screen!=="home")return;window._tcLaunch=1;screen="time"}
 function clockChip(){const c=document.getElementById("clockChip");if(!c)return;if(!canField()||(mode==="shared"&&!window._tcLoaded)){c.hidden=true;return}const o=tcOpen(myId());c.hidden=false;
  c.className="badge clk "+(o?(onBreak(o)?"sample":"live"):"sample");c.textContent=o?`${onBreak(o)?"On break":"On the clock"} · ${jkLabel(o.job)}${o.code?" · "+o.code:""}`:"Not clocked in · tap to clock in"}
-const APP_VERSION="98",APP_DATE="Nov 10, 2026";
+const APP_VERSION="99",APP_DATE="Nov 10, 2026";
 function verStamp(){const el=document.getElementById("appVer");if(el)el.textContent=`App version ${APP_VERSION} · ${APP_DATE} · ${window._selfHost?"company server":mode==="shared"?"claude.ai":"this browser"}`}
 function renderScreen(){launchClock();verStamp();setTimeout(clockChip,0);
  applyTabs();
