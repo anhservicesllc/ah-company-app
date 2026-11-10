@@ -59,6 +59,10 @@ Every photo uploaded to the server is also copied to the owner's Google Drive (`
 - **Errors** show on `/admin` and in `audit.log`. "Google sign-in failed" means reconnect.
 - **Tests:** `tests/server-drive.test.js` runs the whole flow against a fake Google (`AH_GOOGLE_AUTH`, `AH_GOOGLE_OAUTH`, `AH_GOOGLE_API`, `AH_PUBLIC_URL`).
 
+## Home-screen icon
+
+`/manifest.webmanifest` and `/icons/icon-*.png` are public, so "Add to Home screen" shows the A&H saw-blade logo even from the sign-in page. The icons in `icons/` were made from the logo inside `app.html` (180 px, scaled to 192 and 512, plus a padded "maskable" 512 for Android). The server adds the icon links to every page it sends, including `app.html`.
+
 ## Running it locally
 
 ```

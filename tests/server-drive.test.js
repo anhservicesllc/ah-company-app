@@ -75,3 +75,13 @@ test('privacy page is public', async () => {
   const r = await fetch(base + '/privacy'); assert.equal(r.status, 200);
   const t = await r.text(); assert.match(t, /drive\.file/); assert.match(t, /info@anhservicesllc\.com/);
 });
+
+test('home-screen icon: manifest, icons and links on the sign-in page and the app', async () => {
+  const m = await (await fetch(base + '/manifest.webmanifest')).json();
+  assert.equal(m.short_name, 'A&H'); assert.ok(m.icons.some(i => i.sizes === '512x512'));
+  for (const i of m.icons) { const r = await fetch(base + i.src); assert.equal(r.status, 200, i.src); assert.equal(r.headers.get('content-type'), 'image/png'); }
+  assert.equal((await fetch(base + '/icons/icon-180.png')).status, 200);
+  assert.notEqual((await fetch(base + '/icons/../server.js')).status, 200, 'no other files served');
+  const login = await (await fetch(base + '/login')).text(); assert.match(login, /rel="manifest"/); assert.match(login, /apple-touch-icon" href="\/icons\/icon-180.png"/);
+  const app = await (await go('/')).text(); assert.match(app, /<head><link rel="manifest"/);
+});

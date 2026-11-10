@@ -115,7 +115,10 @@ async function readJSONBody(req) { const b = await readBody(req, MAX_JSON); try 
 const IMG_TYPES = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif', 'image/heic': '.heic', 'application/pdf': '.pdf', 'video/mp4': '.mp4', 'video/quicktime': '.mov' };
 
 /* ---------- pages ---------- */
-const page = (title, body) => `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>
+/* home-screen icon: phones read these when someone adds the app to the home screen */
+const ICON_LINKS = '<link rel="manifest" href="/manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png"><link rel="apple-touch-icon" href="/icons/icon-180.png"><meta name="theme-color" content="#0b2545"><meta name="apple-mobile-web-app-title" content="A&amp;H">';
+
+const page = (title, body) => `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>${ICON_LINKS}<style>
 :root{--bg:#f3f5f7;--panel:#fff;--ink:#18212b;--muted:#5d6b78;--line:#d9e0e6;--accent:#1d4f8c;--red:#b42318}
 @media (prefers-color-scheme:dark){:root{--bg:#11161c;--panel:#18202a;--ink:#e6ebf0;--muted:#93a1ae;--line:#2b3644;--accent:#7fb0ec;--red:#ff8a80}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -304,6 +307,11 @@ const server = http.createServer(async (req, res) => {
 <p><strong>Google Drive.</strong> If the company owner connects Google Drive, the server copies job and home photos into a folder it creates in the owner's Drive. It uses Google's <code>drive.file</code> permission, so it can only see and change the files and folders it created itself, never anything else in that Drive. Google user data is used only to store those copies and is not shared with anyone. The owner can disconnect at any time on the admin page or in their Google Account settings.</p>
 <p><strong>Questions or removal requests:</strong> info@anhservicesllc.com</p>
 <p class="note">Updated November 10, 2026</p></div>`), 'text/html; charset=utf-8');
+    /* app icon and install info (public, so "Add to Home screen" works from the sign-in page too) */
+    if (p === '/manifest.webmanifest') return send(res, 200, JSON.stringify({ name: 'A&H Services', short_name: 'A&H', start_url: '/', scope: '/', display: 'standalone', background_color: '#ffffff', theme_color: '#0b2545',
+      icons: [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }, { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }, { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }] }), 'application/manifest+json');
+    if (/^\/icons\/icon-(180|192|512|maskable-512)\.png$/.test(p)) { const f = path.join(ROOT, p.slice(1)); if (!fs.existsSync(f)) return send(res, 404, 'not found');
+      res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=604800', 'X-Content-Type-Options': 'nosniff' }); return fs.createReadStream(f).pipe(res); }
     if (p === '/api/health') return send(res, 200, { ok: true, app: 'ah-estimating', version: APP_VER, users: users.length > 0, ai: aiOn(), drive: gdOn() });
 
     /* sign in / out / first run */
@@ -325,7 +333,7 @@ const server = http.createServer(async (req, res) => {
     if (p === '/' || p === '/index.html' || p === '/app.html') {
       if (!me) return redirect(res, users.length ? 'login' : 'login');
       const f = path.join(ROOT, 'app.html'); if (!fs.existsSync(f)) return send(res, 500, 'app.html is missing next to server.js');
-      return send(res, 200, fs.readFileSync(f), 'text/html; charset=utf-8');
+      return send(res, 200, fs.readFileSync(f, 'utf8').replace(/<head>/i, '<head>' + ICON_LINKS), 'text/html; charset=utf-8');
     }
 
     /* user admin */
