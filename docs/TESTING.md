@@ -29,6 +29,7 @@ GitHub runs `npm test` on every pull request and every push to `main` (`.github/
 | `app-calendar.test.js` | Calendars by role, Master and toggles; calendar, crew and vendor on an appointment; office adds a crew calendar and sets who sees it |
 | `app-backup.test.js` | Moving records with a backup file: choose what to bring in; sign-in records from the other app start unticked |
 | `app-smoke.test.js` | Every tab opens with no JavaScript error, on desktop and phone, for every role; the test estimate opens for every role |
+| `server-drive.test.js` | Google Drive photo copy against a fake Google: connect (wrong state refused), folder per home, upload, never copied twice, secret never shown, owner only; health reports the version |
 | `server.test.js` | Owner setup and second-setup refusal; sign-in; signed-out requests refused; save, merge, list and delete; access rules; bad paths; admin-only pages; the daily training email, including a wrong mailbox password |
 
 ## How the app tests work

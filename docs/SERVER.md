@@ -48,6 +48,16 @@ Scheduled tasks run in Anthropic's cloud and **can't reach this server**; the ne
 - **How it's sent:** over SMTP with implicit TLS (port 465) and AUTH LOGIN, using a mailbox the owner sets on /admin. The password is stored only in `ah-data/mail.json`.
 - **Status:** the result and last error show on /admin and are saved in `export.json`.
 
+## Photos to Google Drive
+
+Every photo uploaded to the server is also copied to the owner's Google Drive (`gdSync`, every 10 minutes and on **Copy now**).
+
+- **Where:** a folder the server creates, **A&H App Photos**, with a subfolder per kind (Homes, Estimates and jobs, Work orders, Daily logs…) and one per record. Photos not on any record after an hour go to **Unfiled**. The server finds where a photo belongs by looking for its id in the records.
+- **Permission:** the owner's own Google Cloud OAuth client with the `drive.file` scope. The server can only see what it created. The owner pastes the client ID and secret on `/admin` and taps **Connect Google Drive**. The refresh token lives in `ah-data/gdrive.json`; what's been copied is in `ah-data/gdrive-sync.json`.
+- **Google Cloud setup** (owner, once): project "A&H App" → enable Google Drive API → OAuth consent screen (External, scope `…/auth/drive.file`, **Publish app** so the connection doesn't expire after 7 days) → Web client with redirect URI `https://app.anhservicesllc.com/admin/google/callback`.
+- **Errors** show on `/admin` and in `audit.log`. "Google sign-in failed" means reconnect.
+- **Tests:** `tests/server-drive.test.js` runs the whole flow against a fake Google (`AH_GOOGLE_AUTH`, `AH_GOOGLE_OAUTH`, `AH_GOOGLE_API`, `AH_PUBLIC_URL`).
+
 ## Running it locally
 
 ```
