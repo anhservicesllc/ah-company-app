@@ -297,6 +297,13 @@ const server = http.createServer(async (req, res) => {
     const u0 = url.parse(req.url, true), p = u0.pathname.replace(/\/+$/, '') || '/', q = u0.query, me = currentUser(req);
     const who = me ? me.email : '';
 
+    /* public privacy page (Google asks for one before the Drive connection can be "In production") */
+    if (p === '/privacy') return send(res, 200, page('Privacy · A&H', `<h1>A&amp;H Services LLC company app: privacy</h1><div class="box">
+<p>This app is used by A&amp;H Services LLC and A&amp;H Construction LLC (Henderson, Nevada) and its employees to run estimates, jobs, schedules, time cards, training and customer records. Only people the company gives a sign-in can use it.</p>
+<p><strong>What it keeps.</strong> The records staff enter (customers, homes, estimates, jobs, photos, time and training) are stored on the company's own server. They are not sold, rented or shared for advertising.</p>
+<p><strong>Google Drive.</strong> If the company owner connects Google Drive, the server copies job and home photos into a folder it creates in the owner's Drive. It uses Google's <code>drive.file</code> permission, so it can only see and change the files and folders it created itself, never anything else in that Drive. Google user data is used only to store those copies and is not shared with anyone. The owner can disconnect at any time on the admin page or in their Google Account settings.</p>
+<p><strong>Questions or removal requests:</strong> info@anhservicesllc.com</p>
+<p class="note">Updated November 10, 2026</p></div>`), 'text/html; charset=utf-8');
     if (p === '/api/health') return send(res, 200, { ok: true, app: 'ah-estimating', version: APP_VER, users: users.length > 0, ai: aiOn(), drive: gdOn() });
 
     /* sign in / out / first run */
