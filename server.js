@@ -174,14 +174,15 @@ const aiBox = u => { const c = aiConf(); return `<div class="box"><h2 style="fon
 const MAIL_F = path.join(DATA, 'mail.json'), EXP_F = path.join(DATA, 'export.json');
 function mailConf() { const f = readJSON(MAIL_F, {}); return { host: f.host || process.env.AH_SMTP_HOST || '', port: +(f.port || process.env.AH_SMTP_PORT || 465), user: f.user || process.env.AH_SMTP_USER || '', pass: f.pass || process.env.AH_SMTP_PASS || '', from: f.from || process.env.AH_SMTP_FROM || f.user || process.env.AH_SMTP_USER || '', to: f.to || process.env.AH_EXPORT_TO || 'info@anhservicesllc.com' }; }
 const mailOn = () => { const c = mailConf(); return !!(c.host && c.user && c.pass && c.to); };
-function smtpSend({ subject, text }) {
+function smtpSend({ subject, text, to: toAddr }) {
   const c = mailConf(), tls = require('tls');
   return new Promise((ok, bad) => {
     const sock = tls.connect({ host: c.host, port: c.port, servername: c.host, rejectUnauthorized: process.env.AH_SMTP_INSECURE !== '1' });
     let buf = '', step = 0; const t = setTimeout(() => { sock.destroy(); bad(new Error('mail server timed out')); }, 30000);
     const b64 = x => Buffer.from(x, 'utf8').toString('base64');
-    const msg = [`From: A&H company server <${c.from}>`, `To: ${c.to}`, `Subject: ${subject}`, `Date: ${new Date().toUTCString()}`, `Message-ID: <${id(12)}@ah-company-server>`, 'MIME-Version: 1.0', 'Content-Type: text/plain; charset=utf-8', 'Content-Transfer-Encoding: base64', '', b64(text).replace(/.{1,76}/g, '$&\r\n')].join('\r\n');
-    const steps = [[220, 'EHLO ah-company-server'], [250, 'AUTH LOGIN'], [334, b64(c.user)], [334, b64(c.pass)], [235, `MAIL FROM:<${c.from}>`], [250, `RCPT TO:<${c.to}>`], [250, 'DATA'], [354, msg + '\r\n.'], [250, 'QUIT']];
+    const rcpt = toAddr || c.to;
+    const msg = [`From: A&H company server <${c.from}>`, `To: ${rcpt}`, `Subject: ${/^[\x20-\x7e]*$/.test(subject) ? subject : '=?UTF-8?B?' + Buffer.from(subject, 'utf8').toString('base64') + '?='}`, `Date: ${new Date().toUTCString()}`, `Message-ID: <${id(12)}@ah-company-server>`, 'MIME-Version: 1.0', 'Content-Type: text/plain; charset=utf-8', 'Content-Transfer-Encoding: base64', '', b64(text).replace(/.{1,76}/g, '$&\r\n')].join('\r\n');
+    const steps = [[220, 'EHLO ah-company-server'], [250, 'AUTH LOGIN'], [334, b64(c.user)], [334, b64(c.pass)], [235, `MAIL FROM:<${c.from}>`], [250, `RCPT TO:<${rcpt}>`], [250, 'DATA'], [354, msg + '\r\n.'], [250, 'QUIT']];
     sock.on('data', d => { buf += d.toString('utf8'); let i; while ((i = buf.indexOf('\r\n')) >= 0) { const line = buf.slice(0, i); buf = buf.slice(i + 2); if (/^\d{3}-/.test(line)) continue; const code = +line.slice(0, 3);
       if (step >= steps.length) { clearTimeout(t); sock.end(); return ok(); }
       const [want, cmd] = steps[step]; if (code !== want) { clearTimeout(t); sock.destroy(); return bad(new Error(`mail server said: ${step === 4 ? 'login failed' : line.slice(0, 120)}`)); }
@@ -294,6 +295,44 @@ ${u.owner ? `<form method="post" action="admin/google"><label>Client ID<input na
 ${c.clientId && c.clientSecret ? `<p style="margin-bottom:0"><a href="admin/google/start"><button type="button">${gdOn() ? 'Reconnect' : 'Connect'} Google Drive</button></a> ${gdOn() ? `<form method="post" action="admin/google/sync" style="display:inline"><button class="ghost">Copy now</button></form> <form method="post" action="admin/google/off" style="display:inline"><button class="ghost">Disconnect</button></form>` : ''}</p>` : ''}
 <p class="note">Redirect address to register in Google Cloud: <code>${esc((process.env.AH_PUBLIC_URL || 'https://app.anhservicesllc.com') + '/admin/google/callback')}</code></p>` : '<p class="note">The owner sets this up.</p>'}</div>`; };
 
+/* ---------- appointment reminders by email ----------
+   Every 5 minutes: appointments with a reminder (minutes before the start; 1 hour if not set) whose reminder time
+   has come and that haven't started yet get one email to each person booked on them who has a sign-in here.
+   Times are read in the time zone of the phone that saved the appointment (appts.tz), else AH_TZ / America/Denver. */
+const REM_F = path.join(DATA, 'reminders-sent.json');
+function zonedMs(date, time, tz) {
+  const [y, mo, d] = String(date).split('-').map(Number), [h, mi] = String(time || '09:00').split(':').map(Number);
+  let guess = Date.UTC(y, mo - 1, d, h, mi);
+  for (let i = 0; i < 2; i++) {
+    let p; try { p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(guess)).map(x => [x.type, x.value])); } catch (e) { return NaN; }
+    const shown = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute);
+    guess += Date.UTC(y, mo - 1, d, h, mi) - shown;
+  }
+  return guess;
+}
+const remMin = a => (a.remind === undefined || a.remind === null || a.remind === '') ? 60 : +a.remind;
+async function sendReminders(now) {
+  if (!mailOn()) return 0;
+  now = now || Date.now(); const sent = readJSON(REM_F, {}); let n = 0;
+  for (const x of listCol(['appts'])) {
+    const a = x.data || {}; if (!a.date || !a.time || !remMin(a) || ['Done', 'Canceled', 'No-show'].includes(a.status)) continue;
+    const start = zonedMs(a.date, a.time, a.tz || process.env.AH_TZ || 'America/Denver'); if (!start || now < start - remMin(a) * 60e3 || now >= start) continue;
+    const key = `${x.id}@${a.date}T${a.time}`; const done = new Set(sent[key] || []);
+    const people = users.filter(u => !u.disabled && (a.who || []).includes(u.id) && !done.has(u.id));
+    for (const u of people) {
+      const when = new Date(start).toLocaleString('en-US', { timeZone: a.tz || process.env.AH_TZ || 'America/Denver', weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      const title = [a.kind, a.label].filter(Boolean).join(' – ');
+      try { await smtpSend({ to: u.email, subject: `Reminder: ${title} ${when}`, text: `Hi ${u.name || ''},\n\nReminder: ${title}\nWhen: ${when}${a.loc ? '\nWhere: ' + a.loc : ''}${a.notes ? '\nNotes: ' + a.notes : ''}\n\nOpen the app: ${(process.env.AH_PUBLIC_URL || 'https://app.anhservicesllc.com')}\n\nA&H company server` });
+        done.add(u.id); n++; audit('server', `reminder sent to ${u.email} for ${x.id}`);
+      } catch (e) { audit('server', `reminder to ${u.email} failed: ${e.message}`); }
+    }
+    sent[key] = [...done];
+  }
+  const cut = Date.now() - 30 * 864e5; for (const k of Object.keys(sent)) { const d = Date.parse(k.split('@')[1]); if (d && d < cut) delete sent[k]; }
+  writeJSON(REM_F, sent); return n;
+}
+setInterval(() => { sendReminders().catch(() => {}); }, 5 * 60e3).unref();
+
 /* ---------- router ---------- */
 const server = http.createServer(async (req, res) => {
   try {
@@ -389,6 +428,11 @@ const server = http.createServer(async (req, res) => {
       if (!me || !me.owner) return send(res, 403, 'Owner only');
       const c = gdConf(); writeJSON(GD_F, { ...c, refreshToken: '' }); gdTok = { t: '', exp: 0 }; audit(who, 'google drive disconnected');
       return redirect(res, '../../admin?m=' + encodeURIComponent('Google Drive disconnected. Photos already copied stay in Drive.'));
+    }
+    if (p === '/admin/reminders' && req.method === 'POST') {
+      if (!me || !me.owner) return send(res, 403, 'Owner only');
+      let m; try { const n = await sendReminders(); m = n ? `Sent ${n} reminder emails.` : 'No reminders due right now.'; } catch (e) { m = 'Could not send: ' + e.message; }
+      return redirect(res, '../admin?m=' + encodeURIComponent(m));
     }
     if (p === '/admin/export' && req.method === 'POST') {
       if (!me || !me.owner) return send(res, 403, 'Owner only');

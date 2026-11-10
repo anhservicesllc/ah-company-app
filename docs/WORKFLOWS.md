@@ -88,7 +88,9 @@ The **Calendar** tab (was Schedule; screen key `schedule`). Each appointment sit
 | Vendors & deliveries | Estimator, Senior, Office | same |
 | Office | Senior, Office | same |
 
-- **Views:** Day, Week, Month, 3 months and List (next 30 days), remembered on each device. Tap a day number to open that day; tap an appointment to edit it.
+- **Views (every role):** Day, Week, Month, 3 months, 6 months, Year, Next 30 days, and Pick dates (any From/To range, shown as a list), remembered on each device. ‹ › move by the view's length. Tap a day number to open that day; tap an appointment to edit it.
+- **Reminders:** each appointment has a Reminder choice (none, 15 min, 30 min, 1 h (default), 2 h, 1 day, 2 days). The company server emails everyone ticked under Who goes who has a sign-in, once, at that time (`sendReminders`, every 5 minutes, needs the mail settings on /admin). The time is read in the time zone of the phone that saved it (`appts.tz`). "Add to my calendar" uses the same reminder, and the app shows a reminder note if it's open.
+- **Long dropdowns** (16+ choices: vendors, customers, jobs…) get a "Type to find…" box above them; every word typed must appear in the name, and a single match is picked (`selFind`).
 - **Showing calendars:** tap a calendar to show or hide it; **Master** shows every calendar you can see. The choice is remembered on that phone.
 - **Always visible:** someone booked on an appointment always sees it.
 - **Manage calendars** (Office, Senior): rename, recolor, set who can see and who can add, turn one off, add crew calendars or others. Changes are stored in `calendars`, overriding the built-in four (`CAL0`).

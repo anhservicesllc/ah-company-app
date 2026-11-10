@@ -59,6 +59,10 @@ Every photo uploaded to the server is also copied to the owner's Google Drive (`
 - **Errors** show on `/admin` and in `audit.log`. "Google sign-in failed" means reconnect.
 - **Tests:** `tests/server-drive.test.js` runs the whole flow against a fake Google (`AH_GOOGLE_AUTH`, `AH_GOOGLE_OAUTH`, `AH_GOOGLE_API`, `AH_PUBLIC_URL`).
 
+## Appointment reminder emails
+
+Every 5 minutes the server emails appointment reminders (`sendReminders`) to the people booked on each appointment who have a sign-in, using the outgoing mailbox from "Training updates to the office". Sent reminders are tracked in `ah-data/reminders-sent.json` so nobody gets one twice. Owners can send due reminders right away by POSTing `/admin/reminders`. Non-ASCII subjects are encoded (RFC 2047).
+
 ## Home-screen icon
 
 `/manifest.webmanifest` and `/icons/icon-*.png` are public, so "Add to Home screen" shows the A&H saw-blade logo even from the sign-in page. The icons in `icons/` were made from the logo inside `app.html` (180 px, scaled to 192 and 512, plus a padded "maskable" 512 for Android). The server adds the icon links to every page it sends, including `app.html`.
