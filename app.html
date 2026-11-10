@@ -852,7 +852,7 @@ async function boot(){
  if(d){db=d;setMode("shared");try{assets=await window.claude.use("assets")}catch(e){assets=null}
   loadStores();
   db.collection("estimates").onSnapshot(s=>{ests=keepLocal("estimates",ests,s.docs.map(x=>({...x.data(),id:x.id})));render(true)},()=>{});
-  db.doc("config/main").onSnapshot(s=>{if(s.exists){const d0=JSON.parse(JSON.stringify(DEFAULT_CFG)),sd=s.data();cfg={...d0,...sd,book:{...d0.book,...(sd.book||{})},margin:{...d0.margin,...(sd.margin||{})},minJob:{...d0.minJob,...(sd.minJob||{})},tax:{...d0.tax,...(sd.tax||{})},labAdj:{...d0.labAdj,...(sd.labAdj||{})},mktF:{...d0.mktF,...(sd.mktF||{})},tradeF:{...d0.tradeF,...(sd.tradeF||{})}};renderBook();render()}},()=>{});
+  db.doc("config/main").onSnapshot(s=>{if(s.exists){const d0=JSON.parse(JSON.stringify(DEFAULT_CFG)),sd=s.data();cfg={...d0,...sd,book:{...d0.book,...(sd.book||{})},margin:{...d0.margin,...(sd.margin||{})},minJob:{...d0.minJob,...(sd.minJob||{})},tax:{...d0.tax,...(sd.tax||{})},labAdj:{...d0.labAdj,...(sd.labAdj||{})},mktF:{...d0.mktF,...(sd.mktF||{})},tradeF:{...d0.tradeF,...(sd.tradeF||{})}};renderBook();render(true)}},()=>{});
  }else{let st=null;try{st=JSON.parse(localStorage.getItem(LKEY))}catch(e){}ests=st?.ests||[];if(st?.cfg)cfg=st.cfg;setMode("local");loadStores();renderBook();render()}
 }
 
@@ -3470,7 +3470,7 @@ const renderDetail=()=>renderScreen();
 function launchClock(){if(window._tcAsked)return;if(mode==="shared"&&!(window._tcLoaded&&me.ready&&teamLoaded))return;if(mode!=="shared"&&mode!=="local")return;window._tcAsked=1;if(!canField()||tcOpen(myId())||screen!=="home")return;window._tcLaunch=1;screen="time"}
 function clockChip(){const c=document.getElementById("clockChip");if(!c)return;if(!canField()||(mode==="shared"&&!window._tcLoaded)){c.hidden=true;return}const o=tcOpen(myId());c.hidden=false;
  c.className="badge clk "+(o?(onBreak(o)?"sample":"live"):"sample");c.textContent=o?`${onBreak(o)?"On break":"On the clock"} · ${jkLabel(o.job)}${o.code?" · "+o.code:""}`:"Not clocked in · tap to clock in"}
-const APP_VERSION="100",APP_DATE="Nov 10, 2026";
+const APP_VERSION="101",APP_DATE="Nov 10, 2026";
 function verStamp(){const el=document.getElementById("appVer");if(el)el.textContent=`App version ${APP_VERSION} · ${APP_DATE} · ${window._selfHost?"company server":mode==="shared"?"claude.ai":"this browser"}`}
 function renderScreen(){launchClock();verStamp();setTimeout(clockChip,0);
  applyTabs();

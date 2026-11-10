@@ -145,6 +145,9 @@ test('reminder choice is saved, shown, and used by "Add to my calendar"', async 
   /* a live update from another device must not wipe the form while it is being filled in (tablet: dropdown came up empty) */
   const nodeBefore = await p.evaluate(() => { window._mark = document.querySelector('#apRemind'); render(true); return true; });
   assert.ok(nodeBefore && await p.evaluate(() => document.querySelector('#apRemind') === window._mark), 'form not redrawn by live updates');
+  /* a settings change saved on another device (config snapshot) must not redraw the open form either (desktop: Reminder list closed/reset) */
+  await p.evaluate(async () => { window._mark = document.querySelector('#apRemind'); cfg.cfgTouch = Date.now(); await saveCfg(); }); await p.waitForTimeout(600);
+  assert.ok(await p.evaluate(() => document.querySelector('#apRemind') === window._mark), 'settings update did not redraw the open form');
   await p.evaluate(() => renderScreen()); await p.waitForTimeout(100);
   assert.equal(await p.$eval('#apRemind', e => e.value), '1440', 'pick kept through a redraw');
   assert.equal(await p.$eval('#apDur', e => e.value), '120');
