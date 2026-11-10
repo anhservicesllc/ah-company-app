@@ -88,6 +88,7 @@ The **Calendar** tab (was Schedule; screen key `schedule`). Each appointment sit
 | Vendors & deliveries | Estimator, Senior, Office | same |
 | Office | Senior, Office | same |
 
+- **Views:** Day, Week, Month, 3 months and List (next 30 days), remembered on each device. Tap a day number to open that day; tap an appointment to edit it.
 - **Showing calendars:** tap a calendar to show or hide it; **Master** shows every calendar you can see. The choice is remembered on that phone.
 - **Always visible:** someone booked on an appointment always sees it.
 - **Manage calendars** (Office, Senior): rename, recolor, set who can see and who can add, turn one off, add crew calendars or others. Changes are stored in `calendars`, overriding the built-in four (`CAL0`).

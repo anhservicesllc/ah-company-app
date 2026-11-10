@@ -135,3 +135,35 @@ test('home profile saves as you type and has Save / Done buttons', async () => {
   assert.deepEqual(app.errors, []);
   await app.close();
 });
+
+test('time from a sign-in not linked to an employee shows under Employees and can be linked', async () => {
+  const s = jobsSeed();
+  const day = new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+  s['timeclock/T-1'] = { by: 'u_rachael', in: day + 'T08:00:00', out: day + 'T12:00:00', job: 'job|J-1001', code: '920', status: 'open' };
+  s['staff/AHS-EXE-1003'] = { name: 'Rachael Alexander', type: 'Full-time', active: true };
+  const app = await openApp({ seed: s, role: 'office' });
+  const p = app.page;
+  await p.evaluate(() => { window._tview = 'emp'; go('time'); }); await p.waitForTimeout(400);
+  const h = await p.$eval('#screen', e => e.innerText);
+  assert.match(h, /not linked to an employee/i); assert.match(h, /4\.00 h this week/);
+  await p.click('[data-empsel="uid:u_rachael"]'); await p.waitForTimeout(300);
+  await p.selectOption('[data-tclink="u_rachael"]', 'AHS-EXE-1003'); await p.waitForTimeout(400);
+  assert.equal(await p.evaluate(() => staffById('AHS-EXE-1003').uid), 'u_rachael');
+  assert.match(await p.$eval('#screen', e => e.innerText), /4\.00 h/);
+  assert.deepEqual(app.errors, []);
+  await app.close();
+});
+
+test('a live update arriving mid-save does not wipe what was just typed', async () => {
+  const app = await openApp({ seed: jobsSeed(), role: 'office' });
+  const r = await app.page.evaluate(async () => {
+    const j = jobs.find(x => x.id === 'J-1001');
+    pendStart('jobs/J-1001'); j.name = 'Typed while saving';
+    const stale = jobs.map(x => ({ ...x, name: x.id === 'J-1001' ? 'Old name from server' : x.name }));
+    const kept = keepLocal('jobs', jobs, stale).find(x => x.id === 'J-1001').name;
+    pendEnd('jobs/J-1001');
+    return kept;
+  });
+  assert.equal(r, 'Typed while saving');
+  await app.close();
+});
