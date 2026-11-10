@@ -70,3 +70,8 @@ test('only the owner can connect Drive', async () => {
   const r = await go('/admin/google/start'); assert.equal(r.status, 403);
   cookie = saved;
 });
+
+test('privacy page is public', async () => {
+  const r = await fetch(base + '/privacy'); assert.equal(r.status, 200);
+  const t = await r.text(); assert.match(t, /drive\.file/); assert.match(t, /info@anhservicesllc\.com/);
+});
