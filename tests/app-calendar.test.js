@@ -67,3 +67,18 @@ test('office adds a crew calendar and sets who can see it', async () => {
   assert.deepEqual(app.errors, []);
   await app.close();
 });
+
+test('who goes: tick employees by name (no sign-in needed) and type anyone else', async () => {
+  const s = seed(); s['staff/S1'] = { name: 'Ronald A Alexander', type: 'Full-time', active: true }; s['staff/S2'] = { name: 'Sean Leavitt', type: 'Full-time', active: true };
+  const app = await openApp({ seed: s, role: 'office' });
+  const p = app.page;
+  await p.evaluate(() => go('schedule')); await p.waitForTimeout(300);
+  await p.click('[data-apnew=""]'); await p.waitForTimeout(200);
+  await p.check('[data-apstaff="S1"]'); await p.fill('#apWhoText', 'Plumber'); await p.fill('#apLabel', 'Walkthrough');
+  await p.click('[data-apsave]'); await p.waitForTimeout(300);
+  const a = await p.evaluate(() => appts.find(x => x.label === 'Walkthrough'));
+  assert.deepEqual(a.staffIds, ['S1']); assert.equal(a.whoText, 'Plumber');
+  assert.match(await shown(p), /Ronald A Alexander, Plumber/);
+  assert.deepEqual(app.errors, []);
+  await app.close();
+});

@@ -133,7 +133,7 @@ const loginPage = (msg, firstRun) => page('Sign in · A&H', `<h1>A&amp;H Estimat
   ${msg ? `<p class="err">${msg}</p>` : ''}</div>`);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const adminPage = (u, msg) => page('Users · A&H', `<h1>Users</h1><p class="note">Signed in as ${esc(u.name || u.email)} · <a href="./">Back to the app</a></p>${msg ? `<p class="err">${esc(msg)}</p>` : ''}
-<div class="box"><table><thead><tr><th>Name</th><th>Email</th><th>Access</th><th></th></tr></thead><tbody>${users.map(x => `<tr><td>${esc(x.name)}${x.owner ? ' (owner)' : ''}</td><td>${esc(x.email)}</td><td>${x.disabled ? '<span class="err">Turned off</span>' : x.admin ? 'Admin' : 'Member'}</td><td>${x.owner ? '' : `<form method="post" action="admin/user" style="display:flex;gap:6px;flex-wrap:wrap"><input type="hidden" name="id" value="${x.id}"><select name="do"><option value="">Change…</option><option value="admin">Make admin</option><option value="member">Make member</option><option value="off">Turn off (person leaves)</option><option value="on">Turn back on</option><option value="reset">Set new password</option></select><input name="password" type="password" placeholder="New password" style="width:9em" autocomplete="new-password"><button class="ghost">Apply</button></form>`}</td></tr>`).join('')}</tbody></table></div>
+<div class="box"><table><thead><tr><th>Name</th><th>Email</th><th>Access</th><th></th></tr></thead><tbody>${users.map(x => `<tr><td>${esc(x.name)}${x.owner ? ' (owner)' : ''}<details style="margin-top:4px"><summary class="note" style="cursor:pointer">Fix name or email</summary><form method="post" action="admin/edit" style="display:grid;gap:6px;margin-top:6px;min-width:14em"><input type="hidden" name="id" value="${x.id}"><label>Name<input name="name" value="${esc(x.name)}" required autocomplete="off"></label><label>Email<input name="email" type="email" value="${esc(x.email)}" required autocomplete="off"></label><button>Save</button></form></details></td><td>${esc(x.email)}</td><td>${x.disabled ? '<span class="err">Turned off</span>' : x.admin ? 'Admin' : 'Member'}</td><td>${x.owner ? '' : `<form method="post" action="admin/user" style="display:flex;gap:6px;flex-wrap:wrap"><input type="hidden" name="id" value="${x.id}"><select name="do"><option value="">Change…</option><option value="admin">Make admin</option><option value="member">Make member</option><option value="off">Turn off (person leaves)</option><option value="on">Turn back on</option><option value="reset">Set new password</option></select><input name="password" type="password" placeholder="New password" style="width:9em" autocomplete="new-password"><button class="ghost">Apply</button></form>`}</td></tr>`).join('')}</tbody></table></div>
 <div class="box"><h2 style="font-size:1.05rem;margin-top:0">Add a person</h2><form method="post" action="admin/add"><label>Name<input name="name" required></label><label>Email<input name="email" type="email" required></label><label>Temporary password (10+ characters)<input name="password" type="password" minlength="10" required autocomplete="new-password"></label><label>Access<select name="admin"><option value="">Member (uses the app; roles set in the app's Team list)</option><option value="1">Admin (also manages users, customers, settings)</option></select></label><button>Add</button></form>
 <p class="note">Turning someone off signs them out everywhere at once. Their past work stays in the app.</p></div>${gdBox(u)}${aiBox(u)}${mailBox(u)}<p class="note">App version ${esc(APP_VER)}</p>`);
 const form = b => Object.fromEntries(new URLSearchParams(b.toString('utf8')));
@@ -394,6 +394,17 @@ const server = http.createServer(async (req, res) => {
       if (!me || !me.owner) return send(res, 403, 'Owner only');
       let m; try { m = await exportTraining(true, who) === 'sent' ? 'Training update sent.' : 'Nothing to send.'; } catch (e) { m = 'Could not send: ' + e.message; }
       return redirect(res, '../admin?m=' + encodeURIComponent(m));
+    }
+    if (p === '/admin/edit' && req.method === 'POST') {
+      if (!me || !me.admin) return send(res, 403, 'Admins only');
+      const f = form(await readBody(req, 1e5)), u = users.find(x => x.id === f.id);
+      if (!u) return redirect(res, '../admin');
+      if (u.owner && !me.owner) return redirect(res, '../admin?m=' + encodeURIComponent('Only the owner can change the owner.'));
+      const name = String(f.name || '').trim().slice(0, 100), em = String(f.email || '').trim().toLowerCase().slice(0, 200);
+      if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return redirect(res, '../admin?m=' + encodeURIComponent('A name and a valid email are needed.'));
+      if (users.some(x => x.id !== u.id && x.email === em)) return redirect(res, '../admin?m=' + encodeURIComponent('That email is already used by someone else.'));
+      const was = u.email; u.name = name; u.email = em; saveUsers(); audit(who, `edited ${was}${was !== em ? ' -> ' + em : ''} (name ${name})`);
+      return redirect(res, '../admin?m=' + encodeURIComponent(`Saved. ${was !== em ? 'They now sign in with ' + em + ' (same password).' : ''}`));
     }
     if (p === '/admin/user' && req.method === 'POST') {
       if (!me || !me.admin) return send(res, 403, 'Admins only');
