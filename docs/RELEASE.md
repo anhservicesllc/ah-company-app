@@ -15,9 +15,9 @@ The same steps every time. Version numbers are the claude.ai artifact's version,
    - Add a short `label` such as "Version 86: …".
    - **Don't pass `capabilities`**, so the stored declaration carries forward.
 8. **Pull request and merge.**
-   - Bump `version` in `package.json` to match.
+   - Bump `version` in `package.json` **and** `APP_VERSION` / `APP_DATE` in `app.html` to match. The smoke test fails if they differ.
    - Push and open a pull request. When the Tests check is green, merge it.
-   - SiteGround deploys within a minute or two. Check `/api/health`.
+   - SiteGround deploys within a minute or two. Check `/api/health`: its `version` must be the new number. The owner can also compare the "App version" line at the bottom of both apps.
 9. **Log the change.** Add a row on the "Change log" tab: version, date, area, what changed, status, notes.
 10. **Update the docs:**
     - the docs here, if behavior changed

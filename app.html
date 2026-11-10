@@ -324,6 +324,7 @@ body.pvon>header,body.pvon>main,body.pvon .bottombar{display:none!important}
       <p class="note" style="margin:0">In this version, photos are ticked off on a checklist. The live version would attach the photos to each item. Prices are samples.</p>
     </div>
   </section>
+<p class="note" id="appVer" style="text-align:center;margin:28px 0 10px"></p>
 </main>
 <div class="bottombar" id="bottombar" hidden></div>
 <div class="toast" id="toast" hidden></div>
@@ -3361,7 +3362,9 @@ const renderDetail=()=>renderScreen();
 function launchClock(){if(window._tcAsked)return;if(mode==="shared"&&!(window._tcLoaded&&me.ready&&teamLoaded))return;if(mode!=="shared"&&mode!=="local")return;window._tcAsked=1;if(!canField()||tcOpen(myId())||screen!=="home")return;window._tcLaunch=1;screen="time"}
 function clockChip(){const c=document.getElementById("clockChip");if(!c)return;if(!canField()||(mode==="shared"&&!window._tcLoaded)){c.hidden=true;return}const o=tcOpen(myId());c.hidden=false;
  c.className="badge clk "+(o?(onBreak(o)?"sample":"live"):"sample");c.textContent=o?`${onBreak(o)?"On break":"On the clock"} · ${jkLabel(o.job)}${o.code?" · "+o.code:""}`:"Not clocked in · tap to clock in"}
-function renderScreen(){launchClock();setTimeout(clockChip,0);
+const APP_VERSION="94",APP_DATE="Nov 10, 2026";
+function verStamp(){const el=document.getElementById("appVer");if(el)el.textContent=`App version ${APP_VERSION} · ${APP_DATE} · ${window._selfHost?"company server":mode==="shared"?"claude.ai":"this browser"}`}
+function renderScreen(){launchClock();verStamp();setTimeout(clockChip,0);
  applyTabs();
  {const t=SCREEN_TAB[screen];if((t&&!tabOK(t))||(screen==="people"&&!staffAccess())){const f=screen==="people"&&tabOK("time")?["time"]:TAB_KEYS.find(([k])=>tabOK(k));if(f&&f[0]!==screen){screen=f[0];return renderScreen()}}}
  const isPage=["book","how"].includes(screen);

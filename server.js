@@ -15,6 +15,7 @@
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto'), url = require('url');
 
 const ROOT = __dirname;
+const APP_VER = (() => { try { return require('./package.json').version.split('.')[0]; } catch (e) { return '?'; } })();
 /* Where the app keeps its data. AH_DATA wins if set. On SiteGround Node.js hosting each update deploys into a new
    build folder under public_html/.nodeapp/, so data kept beside server.js would be lost on the next update; there it
    goes to <site folder>/ah-data instead, outside public_html (not reachable from the web) and outside every build. */
@@ -131,7 +132,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 const adminPage = (u, msg) => page('Users · A&H', `<h1>Users</h1><p class="note">Signed in as ${esc(u.name || u.email)} · <a href="./">Back to the app</a></p>${msg ? `<p class="err">${esc(msg)}</p>` : ''}
 <div class="box"><table><thead><tr><th>Name</th><th>Email</th><th>Access</th><th></th></tr></thead><tbody>${users.map(x => `<tr><td>${esc(x.name)}${x.owner ? ' (owner)' : ''}</td><td>${esc(x.email)}</td><td>${x.disabled ? '<span class="err">Turned off</span>' : x.admin ? 'Admin' : 'Member'}</td><td>${x.owner ? '' : `<form method="post" action="admin/user" style="display:flex;gap:6px;flex-wrap:wrap"><input type="hidden" name="id" value="${x.id}"><select name="do"><option value="">Change…</option><option value="admin">Make admin</option><option value="member">Make member</option><option value="off">Turn off (person leaves)</option><option value="on">Turn back on</option><option value="reset">Set new password</option></select><input name="password" type="password" placeholder="New password" style="width:9em" autocomplete="new-password"><button class="ghost">Apply</button></form>`}</td></tr>`).join('')}</tbody></table></div>
 <div class="box"><h2 style="font-size:1.05rem;margin-top:0">Add a person</h2><form method="post" action="admin/add"><label>Name<input name="name" required></label><label>Email<input name="email" type="email" required></label><label>Temporary password (10+ characters)<input name="password" type="password" minlength="10" required autocomplete="new-password"></label><label>Access<select name="admin"><option value="">Member (uses the app; roles set in the app's Team list)</option><option value="1">Admin (also manages users, customers, settings)</option></select></label><button>Add</button></form>
-<p class="note">Turning someone off signs them out everywhere at once. Their past work stays in the app.</p></div>${aiBox(u)}${mailBox(u)}`);
+<p class="note">Turning someone off signs them out everywhere at once. Their past work stays in the app.</p></div>${gdBox(u)}${aiBox(u)}${mailBox(u)}<p class="note">App version ${esc(APP_VER)}</p>`);
 const form = b => Object.fromEntries(new URLSearchParams(b.toString('utf8')));
 const redirect = (res, to) => { res.writeHead(303, { Location: to, 'Cache-Control': 'no-store' }); res.end(); };
 
@@ -202,13 +203,101 @@ setInterval(() => { if (!mailOn()) return; const now = new Date(), st = readJSON
   if (mtHour >= 15 && (!st.checked || mtDate(new Date(st.checked)) !== mtDate(now))) exportTraining(false).catch(() => {}); }, 15 * 60e3).unref();
 const mailBox = u => { const c = mailConf(), st = readJSON(EXP_F, {}); return `<div class="box"><h2 style="font-size:1.05rem;margin-top:0">Training updates to the office</h2><p class="note">Once a day after 3 pm the server emails new training progress to ${esc(c.to)}, so milestone emails and the Drive training archive include people who train here. Status: ${mailOn() ? 'on' : 'off: set the outgoing mailbox below'}${st.sentAt ? ' · last sent ' + esc(st.sentAt.slice(0, 16).replace('T', ' ')) + ' UTC' : ''}${st.err ? ` · <span class="err">last try failed: ${esc(st.err)}</span>` : ''}.</p>${u.owner ? `<form method="post" action="admin/mail"><label>Mail server (SiteGround: Site Tools > Email > Accounts > Mail configuration)<input name="host" value="${esc(c.host)}" placeholder="e.g. mail.anhservicesllc.com"></label><label>Port (SSL)<input name="port" value="${esc(String(c.port))}"></label><label>Mailbox login (email address)<input name="user" autocomplete="off" value="${esc(c.user)}"></label><label>Mailbox password ${c.pass ? '(saved; leave blank to keep it)' : ''}<input name="pass" type="password" autocomplete="new-password"></label><label>Send to<input name="to" value="${esc(c.to)}"></label><button type="submit">Save mail settings</button></form>${mailOn() ? '<form method="post" action="admin/export" style="margin-top:8px"><button class="ghost">Send training update now</button></form>' : ''}` : '<p class="note">Only the owner can change this.</p>'}</div>`; };
 
+/* ---------- photos copied to Google Drive ----------
+   Every photo uploaded to this server is also copied to the owner's Google Drive, into a folder the server creates
+   ("A&H App Photos"), one subfolder per home, job or work order. The connection uses the owner's own Google Cloud
+   OAuth client with the drive.file permission: the server can only see the files and folders it made, never the rest
+   of the Drive. The owner pastes the client ID and secret on /admin and taps Connect; the refresh token stays in
+   data/gdrive.json on this server. Photos stay on the server too; Drive is the second copy. */
+const GD_F = path.join(DATA, 'gdrive.json'), GD_SYNC_F = path.join(DATA, 'gdrive-sync.json');
+const G_AUTH = process.env.AH_GOOGLE_AUTH || 'https://accounts.google.com', G_OAUTH = process.env.AH_GOOGLE_OAUTH || 'https://oauth2.googleapis.com', G_API = process.env.AH_GOOGLE_API || 'https://www.googleapis.com';
+const gdConf = () => readJSON(GD_F, {});
+const gdOn = () => { const c = gdConf(); return !!(c.clientId && c.clientSecret && c.refreshToken); };
+const gdRedirect = req => (process.env.AH_PUBLIC_URL || ('https://' + String(req.headers.host || 'app.anhservicesllc.com'))).replace(/\/+$/, '') + '/admin/google/callback';
+let gdTok = { t: '', exp: 0 }, gdBusy = false;
+async function gdToken() {
+  if (gdTok.t && Date.now() < gdTok.exp - 60e3) return gdTok.t;
+  const c = gdConf();
+  const r = await fetch(G_OAUTH + '/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: c.clientId, client_secret: c.clientSecret, refresh_token: c.refreshToken, grant_type: 'refresh_token' }).toString() });
+  const j = await r.json().catch(() => ({})); if (!r.ok || !j.access_token) throw new Error('Google sign-in failed: ' + (j.error_description || j.error || r.status) + '. Reconnect Google Drive on /admin.');
+  gdTok = { t: j.access_token, exp: Date.now() + (+j.expires_in || 3600) * 1000 }; return gdTok.t;
+}
+async function gdApi(method, p, body, headers) {
+  const r = await fetch(G_API + p, { method, headers: { authorization: 'Bearer ' + await gdToken(), ...(headers || {}) }, body });
+  if (!r.ok) { const t = await r.text().catch(() => ''); throw new Error(`Drive said ${r.status}: ${t.slice(0, 160)}`); }
+  return r;
+}
+async function gdFolder(name, parent) {
+  const r = await gdApi('POST', '/drive/v3/files?fields=id', JSON.stringify({ name, mimeType: 'application/vnd.google-apps.folder', ...(parent ? { parents: [parent] } : {}) }), { 'content-type': 'application/json' });
+  return (await r.json()).id;
+}
+async function gdUpload(name, type, buf, parent) {
+  const r1 = await gdApi('POST', '/upload/drive/v3/files?uploadType=resumable&fields=id', JSON.stringify({ name, parents: [parent] }), { 'content-type': 'application/json; charset=UTF-8', 'x-upload-content-type': type, 'x-upload-content-length': String(buf.length) });
+  const loc = r1.headers.get('location'); if (!loc) throw new Error('Drive gave no upload address');
+  const r2 = await fetch(loc, { method: 'PUT', headers: { 'content-type': type, 'content-length': String(buf.length) }, body: buf });
+  if (!r2.ok) throw new Error('Drive upload ' + r2.status); return (await r2.json().catch(() => ({}))).id || '';
+}
+/* where each photo belongs: walk the records for photo ids (any {"id":"<32 hex>"}) */
+const GD_KINDS = { homes: 'Homes', estimates: 'Estimates and jobs', jobs: 'Estimates and jobs', wos: 'Work orders', dlogs: 'Daily logs', punch: 'Punch lists', warranty: 'Warranty', coreqs: 'Change orders', orders: 'Orders' };
+const safeName = x => String(x || '').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+function gdLabel(col, did, d) {
+  if (col === 'homes') return safeName([d.address, d.city].filter(Boolean).join(', ') || did) + ` (${did})`;
+  if (col === 'estimates') return safeName([d.jobNo || d.leadNo || did, d.label].filter(Boolean).join(' - '));
+  if (col === 'jobs' || col === 'wos') return safeName([d.jobNo || d.woNo || did, d.name || d.label || d.address].filter(Boolean).join(' - '));
+  return safeName([did, d.job || d.jobNo || d.label || ''].filter(Boolean).join(' - '));
+}
+function gdPlaces() {
+  const map = {};
+  for (const col of Object.keys(GD_KINDS)) for (const x of listCol([col])) {
+    const hits = (JSON.stringify(x.data || {}).match(/"id":"[a-f0-9]{32}"/g) || []).map(h => h.slice(6, -1));
+    for (const b of hits) if (!map[b]) map[b] = { kind: GD_KINDS[col], key: col + '/' + x.id, label: gdLabel(col, x.id, x.data || {}) };
+  }
+  return map;
+}
+async function gdSync(who, max) {
+  if (!gdOn() || gdBusy) return { done: 0, left: 0, skipped: true };
+  gdBusy = true; const st = readJSON(GD_SYNC_F, { files: {}, folders: {} }); st.files = st.files || {}; st.folders = st.folders || {};
+  let done = 0, left = 0;
+  try {
+    const c = gdConf(); if (!c.rootId) { c.rootId = await gdFolder('A&H App Photos'); writeJSON(GD_F, c); }
+    const places = gdPlaces(), now = Date.now();
+    const blobs = fs.readdirSync(BLOBS).filter(f => /^[a-f0-9]{32}\.meta\.json$/.test(f)).map(f => f.slice(0, 32)).filter(b => !st.files[b]);
+    for (const b of blobs) {
+      const meta = readJSON(path.join(BLOBS, b + '.meta.json'), null); if (!meta) continue;
+      const pl = places[b] || (now - Date.parse(meta.at || 0) > 3600e3 ? { kind: 'Unfiled', key: 'unfiled', label: '' } : null);
+      if (!pl) { left++; continue; }   /* just uploaded and not saved on a record yet: wait */
+      if (done >= (max || 40)) { left++; continue; }
+      const kf = 'kind:' + pl.kind; if (!st.folders[kf]) st.folders[kf] = await gdFolder(pl.kind, c.rootId);
+      let parent = st.folders[kf];
+      if (pl.label) { if (!st.folders[pl.key]) st.folders[pl.key] = await gdFolder(pl.label, parent); parent = st.folders[pl.key]; }
+      const buf = fs.readFileSync(path.join(BLOBS, b + (IMG_TYPES[meta.type] || '')));
+      const name = `${(meta.at || '').slice(0, 10)} ${b.slice(0, 8)}${IMG_TYPES[meta.type] || ''}`;
+      st.files[b] = { drive: await gdUpload(name, meta.type, buf, parent), at: new Date().toISOString(), folder: pl.key };
+      done++; writeJSON(GD_SYNC_F, st);
+    }
+    writeJSON(GD_SYNC_F, { ...st, lastRun: new Date().toISOString(), lastErr: '', left });
+    if (done) audit(who || 'server', `copied ${done} photos to Google Drive`);
+    return { done, left };
+  } catch (e) { writeJSON(GD_SYNC_F, { ...st, lastRun: new Date().toISOString(), lastErr: String(e.message || e).slice(0, 240) }); audit(who || 'server', 'Drive copy failed: ' + e.message); throw e; }
+  finally { gdBusy = false; }
+}
+setInterval(() => { gdSync().catch(() => {}); }, 10 * 60e3).unref();
+const gdBox = u => { const c = gdConf(), st = readJSON(GD_SYNC_F, {}), n = Object.keys(st.files || {}).length;
+  const total = (() => { try { return fs.readdirSync(BLOBS).filter(f => f.endsWith('.meta.json')).length; } catch (e) { return 0; } })();
+  return `<div class="box"><h2 style="font-size:1.05rem;margin-top:0">Photos to Google Drive</h2>
+<p class="note">Status: ${gdOn() ? `<strong>connected</strong> · ${n} of ${total} photos copied${st.lastRun ? ' · last run ' + esc(new Date(st.lastRun).toLocaleString('en-US', { timeZone: 'America/Denver' })) : ''}` : (c.clientId ? 'client saved, not connected yet' : 'off')}${st.lastErr ? ` · <span class="err">${esc(st.lastErr)}</span>` : ''}</p>
+<p class="note">Every photo is copied into a Drive folder called "A&amp;H App Photos", one subfolder per home, job or work order, every 10 minutes. The server can only see what it put there.</p>
+${u.owner ? `<form method="post" action="admin/google"><label>Client ID<input name="clientId" value="${esc(c.clientId || '')}" autocomplete="off"></label><label>Client secret${c.clientSecret ? ' (saved; leave blank to keep)' : ''}<input name="clientSecret" type="password" autocomplete="new-password"></label><button>Save</button></form>
+${c.clientId && c.clientSecret ? `<p style="margin-bottom:0"><a href="admin/google/start"><button type="button">${gdOn() ? 'Reconnect' : 'Connect'} Google Drive</button></a> ${gdOn() ? `<form method="post" action="admin/google/sync" style="display:inline"><button class="ghost">Copy now</button></form> <form method="post" action="admin/google/off" style="display:inline"><button class="ghost">Disconnect</button></form>` : ''}</p>` : ''}
+<p class="note">Redirect address to register in Google Cloud: <code>${esc((process.env.AH_PUBLIC_URL || 'https://app.anhservicesllc.com') + '/admin/google/callback')}</code></p>` : '<p class="note">The owner sets this up.</p>'}</div>`; };
+
 /* ---------- router ---------- */
 const server = http.createServer(async (req, res) => {
   try {
     const u0 = url.parse(req.url, true), p = u0.pathname.replace(/\/+$/, '') || '/', q = u0.query, me = currentUser(req);
     const who = me ? me.email : '';
 
-    if (p === '/api/health') return send(res, 200, { ok: true, app: 'ah-estimating', users: users.length > 0, ai: aiOn() });
+    if (p === '/api/health') return send(res, 200, { ok: true, app: 'ah-estimating', version: APP_VER, users: users.length > 0, ai: aiOn(), drive: gdOn() });
 
     /* sign in / out / first run */
     if (p === '/login' && req.method === 'GET') return send(res, 200, loginPage('', users.length === 0), 'text/html; charset=utf-8');
@@ -252,6 +341,39 @@ const server = http.createServer(async (req, res) => {
       const f = form(await readBody(req, 1e5)), old = readJSON(MAIL_F, {});
       writeJSON(MAIL_F, { host: String(f.host || '').trim().slice(0, 200), port: +f.port || 465, user: String(f.user || '').trim().slice(0, 200), pass: String(f.pass || '').trim() || old.pass || '', from: String(f.user || '').trim().slice(0, 200), to: String(f.to || '').trim().slice(0, 200) || 'info@anhservicesllc.com' });
       audit(who, 'mail settings saved'); return redirect(res, '../admin?m=' + encodeURIComponent('Mail settings saved'));
+    }
+    if (p === '/admin/google' && req.method === 'POST') {
+      if (!me || !me.owner) return send(res, 403, 'Owner only');
+      const f = form(await readBody(req, 1e5)), old = gdConf(), cid = String(f.clientId || '').trim().slice(0, 200);
+      writeJSON(GD_F, { ...old, clientId: cid, clientSecret: String(f.clientSecret || '').trim() || old.clientSecret || '', ...(cid !== old.clientId ? { refreshToken: '' } : {}) });
+      audit(who, 'google drive client saved'); return redirect(res, '../admin?m=' + encodeURIComponent('Saved. Now tap Connect Google Drive.'));
+    }
+    if (p === '/admin/google/start' && req.method === 'GET') {
+      if (!me || !me.owner) return send(res, 403, 'Owner only');
+      const c = gdConf(); if (!c.clientId) return redirect(res, '../../admin');
+      const stt = id(12); writeJSON(GD_F, { ...c, oauthState: stt, oauthBy: me.id });
+      return redirect(res, G_AUTH + '/o/oauth2/v2/auth?' + new URLSearchParams({ client_id: c.clientId, redirect_uri: gdRedirect(req), response_type: 'code', scope: 'https://www.googleapis.com/auth/drive.file', access_type: 'offline', prompt: 'consent', state: stt }).toString());
+    }
+    if (p === '/admin/google/callback' && req.method === 'GET') {
+      if (!me || !me.owner) return send(res, 403, 'Owner only');
+      const c = gdConf(); if (!q.state || q.state !== c.oauthState) return redirect(res, '../../admin?m=' + encodeURIComponent('Google connection expired. Tap Connect again.'));
+      if (q.error || !q.code) return redirect(res, '../../admin?m=' + encodeURIComponent('Google said: ' + (q.error || 'no code')));
+      const r = await fetch(G_OAUTH + '/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ code: String(q.code), client_id: c.clientId, client_secret: c.clientSecret, redirect_uri: gdRedirect(req), grant_type: 'authorization_code' }).toString() });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.refresh_token) return redirect(res, '../../admin?m=' + encodeURIComponent('Google connection failed: ' + (j.error_description || j.error || 'no refresh token') + '. Check the redirect address and that the app is published.'));
+      writeJSON(GD_F, { ...c, refreshToken: j.refresh_token, oauthState: '', connectedAt: new Date().toISOString() }); gdTok = { t: j.access_token || '', exp: Date.now() + (+j.expires_in || 0) * 1000 };
+      audit(who, 'google drive connected'); gdSync(who).catch(() => {});
+      return redirect(res, '../../admin?m=' + encodeURIComponent('Google Drive connected. Photos are being copied now.'));
+    }
+    if (p === '/admin/google/sync' && req.method === 'POST') {
+      if (!me || !me.owner) return send(res, 403, 'Owner only');
+      let m; try { const r = await gdSync(who, 200); m = r.skipped ? 'A copy is already running, or Drive is not connected.' : `Copied ${r.done} photos.${r.left ? ` ${r.left} waiting.` : ''}`; } catch (e) { m = 'Copy failed: ' + e.message; }
+      return redirect(res, '../../admin?m=' + encodeURIComponent(m));
+    }
+    if (p === '/admin/google/off' && req.method === 'POST') {
+      if (!me || !me.owner) return send(res, 403, 'Owner only');
+      const c = gdConf(); writeJSON(GD_F, { ...c, refreshToken: '' }); gdTok = { t: '', exp: 0 }; audit(who, 'google drive disconnected');
+      return redirect(res, '../../admin?m=' + encodeURIComponent('Google Drive disconnected. Photos already copied stay in Drive.'));
     }
     if (p === '/admin/export' && req.method === 'POST') {
       if (!me || !me.owner) return send(res, 403, 'Owner only');

@@ -34,3 +34,10 @@ test('fixture estimate opens for every role without errors', async () => {
   assert.deepEqual(app.errors, []);
   await app.close();
 });
+
+test('the version stamp matches package.json', async () => {
+  const app = await openApp();
+  const t = await app.page.textContent('#appVer');
+  assert.match(t, new RegExp('App version ' + require('../package.json').version.split('.')[0] + ' '));
+  await app.close();
+});
