@@ -82,3 +82,24 @@ test('who goes: tick employees by name (no sign-in needed) and type anyone else'
   assert.deepEqual(app.errors, []);
   await app.close();
 });
+
+test('month, 3-month, day and list views; tap a day to open it', async () => {
+  const app = await openApp({ seed: seed(), role: 'office' });
+  const p = app.page;
+  await p.evaluate(() => go('schedule')); await p.waitForTimeout(300);
+  await p.click('[data-calview="month"]'); await p.waitForTimeout(200);
+  assert.ok(await p.$('.mgrid')); assert.match(await p.$eval('.mgrid', e => e.innerText), /Visit Smith/);
+  await p.click('[data-calview="3m"]'); await p.waitForTimeout(200);
+  assert.equal(await p.$$eval('.mgrid', g => g.length), 3);
+  await p.click('[data-calnav="1"]'); await p.waitForTimeout(200);
+  assert.doesNotMatch(await p.$eval('.m3', e => e.innerText), /Visit Smith/, 'moved 3 months ahead');
+  await p.click('[data-calnav="0"]'); await p.waitForTimeout(200);
+  const today = await p.evaluate(() => ldate());
+  await p.click(`.m3 [data-calday="${today}"]`); await p.waitForTimeout(200);
+  assert.equal(await p.evaluate(() => calView()), 'day');
+  assert.match(await shown(p), /Visit Smith/);
+  await p.click('[data-calview="list"]'); await p.waitForTimeout(200);
+  assert.match(await shown(p), /Install Jones/);
+  assert.deepEqual(app.errors, []);
+  await app.close();
+});

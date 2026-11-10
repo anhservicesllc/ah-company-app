@@ -156,6 +156,15 @@ details.guide ol{margin:6px 0 10px;padding-left:20px;display:grid;gap:4px}
 .board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:10px;overflow-x:auto;padding-bottom:8px}
 @media (max-width:640px){.board{grid-auto-flow:row;grid-auto-columns:auto}}
 .jlist{display:none;gap:8px}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.mhead{font-size:.72rem;font-weight:700;color:var(--muted);text-align:center;padding:2px 0}
+.mcell{min-height:92px;border:1px solid var(--line);border-radius:6px;padding:3px;background:var(--panel);min-width:0;display:flex;flex-direction:column;gap:2px}
+.mcell.out{opacity:.45}.mcell.today{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.mday{border:0;background:none;font:inherit;font-size:.78rem;font-weight:700;text-align:left;padding:0 2px;cursor:pointer;color:inherit}
+.mitem{display:block;width:100%;text-align:left;border:0;border-left:3px solid var(--accent);background:var(--bg);padding:1px 4px;font:inherit;font-size:.72rem;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:inherit;border-radius:3px}
+.mmore{font-size:.7rem;color:var(--muted);border:0;background:none;text-align:left;padding:0 2px;cursor:pointer}
+.m3 .mcell{min-height:58px}.m3 .mitem{font-size:.68rem}
+@media (max-width:640px){.mcell{min-height:56px;padding:2px}.mitem{font-size:0;height:6px;padding:0;margin-top:1px}.m3 .mitem{height:5px}}
 .savebar{position:sticky;bottom:0;z-index:4;display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:12px;box-shadow:0 -2px 10px rgba(0,0,0,.06)}
 .savebar .note{flex:1 1 140px}
 @media (max-width:640px){.jtable{display:none}.jlist{display:grid}}
@@ -763,8 +772,13 @@ function missing(e){
 
 /* ---------- storage ---------- */
 const LKEY="ah-estimating-v1";
+/* a live update can arrive while our own save is still on its way; keep the version being edited until the server has it */
+const _pend=new Map();
+function pendStart(k){const p=_pend.get(k)||{n:0,t:0};p.n++;_pend.set(k,p)}
+function pendEnd(k){const p=_pend.get(k);if(p){p.n=Math.max(0,p.n-1);p.t=Date.now()+2000}}
+function keepLocal(col,old,fresh){const now=Date.now();return fresh.map(x=>{const k=col+"/"+x.id,p=_pend.get(k);if(p&&(p.n>0||p.t>now)){const loc=old.find(y=>y.id===x.id);if(loc)return loc}else if(p)_pend.delete(k);return x})}
 async function save(e){
- if(mode==="shared"){try{const {id,...b}=e;await db.doc("estimates/"+id).set(b)}catch(err){toast("Couldn't save. Check your access and try again.")}}
+ if(mode==="shared"){const k="estimates/"+e.id;pendStart(k);try{const {id,...b}=e;await db.doc(k).set(b)}catch(err){toast("Couldn't save. Check your access and try again.")}finally{pendEnd(k)}}
  else{try{localStorage.setItem(LKEY,JSON.stringify({ests,cfg}))}catch(x){}}
 }
 async function saveCfg(){if(mode==="shared"){try{await db.doc("config/main").set(cfg)}catch(e){toast("Couldn't save. Only editors can change the price book.")}}else{try{localStorage.setItem(LKEY,JSON.stringify({ests,cfg}))}catch(x){}}}
@@ -794,7 +808,7 @@ async function selfHostShim(){if(window.claude)return;let ok=false,hh={};try{con
  const assets={upload:async b=>{const r=await fetch("api/upload",{method:"POST",credentials:"same-origin",headers:{"content-type":b.type||"application/octet-stream"},body:b});if(r.status===401)return out();if(!r.ok)throw new Error("upload failed");return r.json()},list:async()=>({assets:[],usage:{}}),delete:async()=>{}};
  const downloads={save:async({filename,data})=>{const bl=data instanceof Blob?data:new Blob([data]);const a=document.createElement("a");a.href=URL.createObjectURL(bl);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}};
  const sample=hh.ai?Object.assign(async(input)=>{const r=await fetch("api/ai",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:typeof input==="string"?input:JSON.stringify(input)})});if(!r.ok)throw Object.assign(new Error("ai "+r.status),{code:r.status===429?"rate_limited":"unavailable"});return r.json()},{json:async(input)=>{const {text}=await sample(input);const m=String(text||"").match(/\{[\s\S]*\}/);return JSON.parse(m?m[0]:text)}}):null;
-window.claude={use:async n=>({db,user,assets,downloads,sample})[n]||null};window._selfHost=me;
+window.claude={use:async n=>({db,user,assets,downloads,sample})[n]||null};window._selfHost=me;roster().then(L=>{window._srvUsers=L||[]});
  const bar=document.querySelector("header .top .actions");if(bar){const sp=document.createElement("span");sp.className="actions";sp.style.gap="10px";sp.innerHTML=(me.admin?'<a href="admin" class="note">Users</a>':'')+'<a href="logout" class="note">Sign out</a>';bar.appendChild(sp)}}
 /* ---------- backup and restore ---------- */
 const BK_COLS=()=>({...(seePay()&&Object.keys(pay).length?{"office/private/pay":Object.entries(pay).map(([id,v])=>({...v,id}))}:{}),estimates:ests,homes,accounts,wos,campaigns,invoices,jobs,dlogs,coreqs,appts,timeclock:tclock,punch:punchItems,orders:orders,costs:jcosts,warranty:wcalls,subs:subs,actuals,training:trnP,classes:trnC,trmiles:trnM,staff,crews,calendars:cals});
@@ -833,7 +847,7 @@ async function boot(){
  render();let d=null;try{d=await window.claude?.use?.("db")}catch(e){}
  if(d){db=d;setMode("shared");try{assets=await window.claude.use("assets")}catch(e){assets=null}
   loadStores();
-  db.collection("estimates").onSnapshot(s=>{ests=s.docs.map(x=>({...x.data(),id:x.id}));render(true)},()=>{});
+  db.collection("estimates").onSnapshot(s=>{ests=keepLocal("estimates",ests,s.docs.map(x=>({...x.data(),id:x.id})));render(true)},()=>{});
   db.doc("config/main").onSnapshot(s=>{if(s.exists){const d0=JSON.parse(JSON.stringify(DEFAULT_CFG)),sd=s.data();cfg={...d0,...sd,book:{...d0.book,...(sd.book||{})},margin:{...d0.margin,...(sd.margin||{})},minJob:{...d0.minJob,...(sd.minJob||{})},tax:{...d0.tax,...(sd.tax||{})},labAdj:{...d0.labAdj,...(sd.labAdj||{})},mktF:{...d0.mktF,...(sd.mktF||{})},tradeF:{...d0.tradeF,...(sd.tradeF||{})}};renderBook();render()}},()=>{});
  }else{let st=null;try{st=JSON.parse(localStorage.getItem(LKEY))}catch(e){}ests=st?.ests||[];if(st?.cfg)cfg=st.cfg;setMode("local");loadStores();renderBook();render()}
 }
@@ -1506,7 +1520,7 @@ function calManageHtml(){const L=calsAll();return `<div class="box stack" style=
   <div class="note" style="margin:0">Can add and change</div><div class="checks">${TAB_ROLE_KEYS.filter(r=>r!=="view").map(r=>`<label class="check"><input type="checkbox" data-calr="${esc(c.id)}|edit|${r}" ${(c.edit||[]).includes(r)?"checked":""}>${esc(ROLE_NAME[r])}</label>`).join("")}</div>
   <label class="check"><input type="checkbox" data-calf="${esc(c.id)}|active" ${c.active!==false?"checked":""}>Calendar is on</label></div></details>`).join("")}
  <div class="actions"><button class="btn small" type="button" data-calnew="Crew">+ Crew calendar</button><button class="btn small" type="button" data-calnew="Other">+ Other calendar</button></div></div>`}
-function scheduleHtml(){const ws=window._wk||weekStart(ldate()),days=[0,1,2,3,4,5,6].map(i=>addDays(ws,i)),F=window._apF||"all",me0=myId();
+function scheduleHtml(){const ws=weekStart(calAnchor()),days=[0,1,2,3,4,5,6].map(i=>addDays(ws,i)),F=window._apF||"all",me0=myId();
  const on=calOn();
  const pick=a=>(on.includes(calOf(a))||(a.who||[]).includes(me0))&&(F==="all"||(F==="mine"?(a.who||[]).includes(me0):(a.who||[]).includes(F)));
  const people=[...new Set(appts.flatMap(a=>a.who||[]))];wantNames(people);
@@ -1515,10 +1529,11 @@ function scheduleHtml(){const ws=window._wk||weekStart(ldate()),days=[0,1,2,3,4,
  return `<div class="hero"><div><h2 style="margin:0">Calendar</h2><p class="lede" style="margin:4px 0 0">Every appointment on its calendar: estimators, field, vendors and deliveries, office and crews. Tap calendars to show or hide them; Master shows all of yours. "Add to my calendar" puts one on your phone with a 1-hour reminder.</p></div>${ed&&calsEdit().length?`<button class="btn primary big" type="button" data-apnew="">+ New appointment</button>`:""}</div>
  ${window._calManage&&staffAccess()?calManageHtml():""}${window._apEdit?apForm(window._apEdit):""}
  ${calChips()}
- <div class="actions" style="margin-bottom:10px"><button class="btn small" type="button" data-apwk="-7">‹ Last week</button><button class="btn small" type="button" data-apwk="0">This week</button><button class="btn small" type="button" data-apwk="7">Next week ›</button><strong style="margin-left:6px">${esc(fmtDate(days[0]))} to ${esc(fmtDate(days[6]))}</strong>
+ ${(()=>{const V=calView(),A=calAnchor(),R=calRange(V,A);
+  return `<div class="tiers" role="group" aria-label="Calendar view" style="grid-template-columns:repeat(5,1fr);max-width:520px;margin-bottom:8px">${[["day","Day"],["week","Week"],["month","Month"],["3m","3 months"],["list","List"]].map(([k,l])=>`<button type="button" data-calview="${k}" aria-pressed="${V===k}">${l}</button>`).join("")}</div>
+ <div class="actions" style="margin-bottom:10px"><button class="btn small" type="button" data-calnav="-1" aria-label="Back">‹</button><button class="btn small" type="button" data-calnav="0">Today</button><button class="btn small" type="button" data-calnav="1" aria-label="Forward">›</button><strong style="margin-left:6px">${esc(R.title)}</strong>
  <select data-apf="1" aria-label="Show" style="width:auto;margin-left:auto"><option value="all"${F==="all"?" selected":""}>Everyone</option><option value="mine"${F==="mine"?" selected":""}>Just me</option>${people.map(p=>`<option value="${esc(p)}"${F===p?" selected":""}>${esc(pname(p))}</option>`).join("")}</select></div>
- <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;align-items:start">${days.map(d=>{const L=appts.filter(a=>a.date===d&&pick(a)).sort((a,b)=>toMin(a.time)-toMin(b.time));
-  return `<div class="bcol" style="min-width:0${d===ldate()?";border-color:var(--accent)":""}"><h3 style="margin:0">${esc(dayName(d))}${d===ldate()?' <span class="pill">Today</span>':""}</h3>${L.map(apCard).join("")||'<p class="note" style="margin:0">Nothing booked.</p>'}</div>`}).join("")}</div>
+ ${calBody(V,A,R,pick)}`})()}
  ${(()=>{const D=orders.filter(o=>!["Received","Canceled"].includes(o.status)&&(ordLate(o)||(o.expected&&o.expected>=days[0]&&o.expected<=days[6]))).sort((a,b)=>String(a.expected).localeCompare(String(b.expected))),Wc=wcalls.filter(w=>["New","Scheduled"].includes(w.status));
   return (D.length?`<div class="box stack" style="margin-top:12px"><h3 style="margin:0">Material deliveries this week and late <span class="count">${D.length}</span></h3>${D.map(o=>`<div class="rrow"><button class="linkbtn" type="button" data-dlog="${esc(o.job)}"><strong>${esc(jkLabel(o.job))}</strong></button><span class="note">${esc(o.vendor)} · ${esc(o.items)} · expected ${esc(fmtDate(o.expected))}</span>${ordLate(o)?'<span class="pill red">Late</span>':`<span class="pill">${esc(o.status)}</span>`}</div>`).join("")}</div>`:"")+(Wc.length?`<div class="box stack" style="margin-top:12px"><h3 style="margin:0">Open warranty and service calls <span class="count">${Wc.length}</span></h3>${Wc.map(w=>`<div class="rrow"><button class="linkbtn" type="button" data-dlog="${esc(w.job)}"><strong>${esc(jkLabel(w.job))}</strong></button><span class="note">${esc(w.issue)} · reported ${esc(fmtDate(w.reported))}</span><span class="pill ${w.status==="New"?"amber":""}">${esc(w.status)}</span></div>`).join("")}</div>`:"")})()}
  <div class="box stack" style="margin-top:12px"><h3 style="margin:0">Estimate follow-ups due <span class="count">${due.length}</span></h3><p class="note" style="margin:0">Every sent estimate gets a follow-up on day 3, 7 and 14, then every 2 weeks until it's marked Won or Lost.${soon?` ${soon} more coming up in the next 3 days.`:""}</p>
@@ -1686,12 +1701,14 @@ function timeNav(){const v=window._tview||"";return `<div class="tiers" role="gr
 function empWeek(uid,ws,we){const L=uid?tclock.filter(t=>t.by===uid&&tDay(t)>=ws&&tDay(t)<=we).sort((a,b)=>a.in.localeCompare(b.in)):[];const C=weekCalc(L);const st=!L.length?"No time":L.every(t=>t.status==="approved")?"Approved":L.every(t=>t.status==="submitted"||t.status==="approved")?"Submitted":"Open";return {L,C,st}}
 function empTimeHtml(){const ws=window._twk||weekStart(ldate()),we=addDays(ws,6);
  const wk=`<div class="actions" style="margin-bottom:10px"><button class="btn small" type="button" data-twk="-7">‹ Last week</button><button class="btn small" type="button" data-twk="0">This week</button><button class="btn small" type="button" data-twk="7">Next week ›</button><strong style="margin-left:6px">${esc(fmtDate(ws))} to ${esc(fmtDate(we))}</strong></div>`;
- const x=window._empSel&&staffById(window._empSel);
+ const x=window._empSel&&(String(window._empSel).startsWith("uid:")?(u=>{wantNames([u]);return {id:"uid:"+u,name:pname(u),uid:u,type:"Sign-in only",position:"Not linked to an employee yet"}})(String(window._empSel).slice(4)):staffById(window._empSel));
  if(x){const E=empWeek(x.uid,ws,we),cr=crewsOfStaff(x.id),open=[...jobs.filter(j=>(j.staffIds||[]).includes(x.id)&&!["Complete","Cancelled"].includes(j.status)).map(j=>j.jobNo+" · "+(j.name||j.line)),...ests.filter(e=>(e.staffIds||[]).includes(x.id)&&e.outcome==="Won"&&e.jobStage!=="Complete").map(e=>(e.jobNo||e.id)+" · "+(e.label||""))];
   if(x.uid)wantNames([x.uid]);
   return `<div class="actions" style="margin-bottom:10px"><button class="btn small" type="button" data-empback="1">‹ All employees</button></div>
   <div class="pcard" style="margin-bottom:12px"><div style="display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center"><h2 style="margin:0">${esc(x.name)}</h2><span class="pill">${esc(x.type||"")}</span>${x.active===false?'<span class="pill amber">Not active</span>':""}</div><span class="note" style="margin:0">${esc([x.position,x.dept].filter(Boolean).join(" · "))}</span>${cr.length?`<span class="note" style="margin:0">Crew: ${esc(cr.map(c=>c.name).join(", "))}</span>`:""}${open.length?`<span class="note" style="margin:0">On: ${esc(open.join(" · "))}</span>`:""}
-  ${mode==="shared"&&team.length?`<label style="max-width:360px">App sign-in<select data-stf="${esc(x.id)}|uid"><option value="">Not linked</option>${team.map(m=>`<option value="${esc(m.id)}"${x.uid===m.id?" selected":""}>${esc(pname(m.id))}</option>`).join("")}</select></label>`:""}</div>
+  ${String(x.id).startsWith("uid:")?`<label style="max-width:360px">This person is<select data-tclink="${esc(x.uid)}"><option value="">Pick the employee…</option>${actStaff().filter(s=>!s.uid).map(s=>`<option value="${esc(s.id)}"${empNameMatch(s.name,x.name)?" selected":""}>${esc(s.name)}</option>`).join("")}</select></label>`:""}
+  ${mode==="shared"&&!String(x.id).startsWith("uid:")?`<label style="max-width:360px">App sign-in<select data-stf="${esc(x.id)}|uid"><option value="">Not linked</option>${empSignins(x.uid).map(([u,n])=>`<option value="${esc(u)}"${x.uid===u?" selected":""}>${esc(n)}</option>`).join("")}</select></label>`:""}
+  ${false&&mode==="shared"&&team.length?`<label style="max-width:360px">App sign-in<select data-stf="${esc(x.id)}|uid"><option value="">Not linked</option>${team.map(m=>`<option value="${esc(m.id)}"${x.uid===m.id?" selected":""}>${esc(pname(m.id))}</option>`).join("")}</select></label>`:""}</div>
   ${wk}
   <div class="box stack"><div class="actions" style="justify-content:space-between"><h3 style="margin:0">Time card</h3><span class="pill ${E.st==="Approved"?"green":E.st==="Submitted"?"amber":""}">${E.st}</span></div>
   ${!x.uid?`<p class="note" style="margin:0">Not linked to an app sign-in yet, so there's no time to show. Pick their sign-in above once they have one.</p>`:E.L.length?`<div class="jlist" style="display:grid">${E.L.map(t=>`<div class="jrow" style="cursor:default"><span class="c"><span class="h"><strong>${esc(dayName(tDay(t)))}</strong><span class="note" style="margin:0">${esc(tTime(t.in))} – ${esc(t.out?tTime(t.out):"still on")}</span></span><span class="t" style="font-size:.95rem">${esc(jkLabel(t.job))}</span><span class="m">${esc([t.code,t.note].filter(Boolean).join(" · "))}${tcFlags(t).length?` · <strong>${esc(tcFlags(t).join("; "))}</strong>`:""}</span></span><span class="mono">${(tcMins(t)/60).toFixed(2)} h</span></div>`).join("")}</div>`:`<p class="note" style="margin:0">No time this week.</p>`}
@@ -1702,7 +1719,13 @@ function empTimeHtml(){const ws=window._twk||weekStart(ldate()),we=addDays(ws,6)
  return `<div class="actions" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0">Employees</h2><button class="btn small" type="button" data-go="people">Manage employees &amp; crews</button></div>${wk}
  <label style="max-width:420px;margin-bottom:8px">Search<input data-empq="1" value="${esc(F)}" placeholder="Name, position or crew"></label>
  <div class="jlist" style="display:grid">${L.map(x=>{const E=empWeek(x.uid,ws,we);return `<button type="button" class="jrow" data-empsel="${esc(x.id)}"><span class="c"><span class="h"><strong>${esc(x.name)}</strong>${x.uid?`<span class="pill ${E.st==="Approved"?"green":E.st==="Submitted"?"amber":""}">${E.st}</span>`:'<span class="pill">No sign-in</span>'}</span><span class="m">${esc([x.position,crewsOfStaff(x.id).map(c=>c.name).join(", ")].filter(Boolean).join(" · "))}</span><span class="m">${x.uid?`${(E.C.total/60).toFixed(2)} h this week${E.C.ot?` · ${(E.C.ot/60).toFixed(2)} h overtime`:""}`:"Link their app sign-in to see time"}</span></span><span class="chev" aria-hidden="true">›</span></button>`}).join("")||`<p class="note">No employees yet.</p>`}</div>
+ ${(()=>{const linked=new Set(staff.map(x=>x.uid).filter(Boolean)),U=[...new Set(tclock.map(t=>t.by))].filter(u=>u&&!linked.has(u));if(!U.length)return "";wantNames(U);
+  return `<h3 style="margin:16px 0 6px">Time from sign-ins not linked to an employee <span class="count">${U.length}</span></h3><p class="note" style="margin:0 0 6px">Tap one to see the time and link it to the right employee.</p><div class="jlist" style="display:grid">${U.map(u=>{const E=empWeek(u,ws,we);return `<button type="button" class="jrow" data-empsel="uid:${esc(u)}"><span class="c"><span class="h"><strong>${esc(pname(u))}</strong><span class="pill ${E.st==="Approved"?"green":E.st==="Submitted"?"amber":""}">${E.st}</span></span><span class="m">${(E.C.total/60).toFixed(2)} h this week · ${tclock.filter(t=>t.by===u).length} entries in all</span></span><span class="chev" aria-hidden="true">›</span></button>`}).join("")}</div>`})()}
  ${tsApproval(ws,we)}`}
+/* sign-ins people can be linked to: the team list plus everyone who has clocked time */
+function empSignins(cur){const ids=[...new Set([...team.map(m=>m.id),...(window._srvUsers||[]).map(u=>u.id),...tclock.map(t=>t.by),cur].filter(Boolean))];wantNames(ids);return ids.map(u=>[u,pname(u)])}
+const empNameMatch=(a,b)=>{const n=x=>String(x||"").toLowerCase().replace(/[^a-z ]/g,"").split(/\s+/).filter(Boolean);const A=n(a),B=n(b);return A.length>1&&B.length>1&&A[0]===B[0]&&A[A.length-1]===B[B.length-1]};
+document.addEventListener("change",async ev=>{const t=ev.target;if(!t.dataset||t.dataset.tclink===undefined||screen!=="time"||!staffAccess())return;const x=staffById(t.value);if(!x)return;x.uid=t.dataset.tclink;await saveItem("staff",x);window._empSel=x.id;renderScreen();toast(x.name+" linked. Their time shows here now.")});
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-tview],[data-empsel],[data-empback]");if(!b)return;
  if(b.dataset.tview!==undefined){window._tview=b.dataset.tview;window._empSel=null;if(screen!=="time")go("time");else renderScreen();return}
  if(b.dataset.empsel){window._empSel=b.dataset.empsel;renderScreen();window.scrollTo({top:0});return}
@@ -1850,7 +1873,7 @@ document.addEventListener("change",async ev=>{const t=ev.target;
   else if(t.dataset.jstaff){const S=new Set(o.staffIds||[]);t.checked?S.add(t.dataset.jstaff):S.delete(t.dataset.jstaff);o.staffIds=[...S];jobStaffSync(o)}
   else{o.staffLead=t.value;jobStaffSync(o)}
   await jobSave(J);renderScreen();toast("Crew saved");return}
- const J=jobInfo(window._dlj);if(!J||screen!=="dlog"||!canOffice())return;
+ const J=screen==="dlog"?jobInfo(window._dlj):screen==="job"?jobInfo("job|"+window._jbid):null;if(!J||!canOffice())return;
  if(t.dataset.jcrew){const S=new Set(crewOf(J));t.checked?S.add(t.dataset.jcrew):S.delete(t.dataset.jcrew);J.obj.crew=[...S];if(J.obj.crewLead&&!S.has(J.obj.crewLead))J.obj.crewLead="";await jobSave(J);renderScreen();return}
  if(t.dataset.jlead!==undefined){J.obj.crewLead=t.value;await jobSave(J);renderScreen();return}
  if(t.dataset.jprof!==undefined){J.obj.codeProfile=t.value;await jobSave(J);renderScreen();return}});
@@ -2379,6 +2402,37 @@ document.addEventListener("change",async ev=>{const t=ev.target;if(screen!=="sch
  if(t.dataset.calf){const k=t.dataset.calf.split("|")[1];c[k]=k==="active"?t.checked:t.value.trim();if(k==="name"&&!c.name)c.name="Calendar"}
  else{const [,w,r]=t.dataset.calr.split("|");const S=new Set(c[w]||[]);t.checked?S.add(r):S.delete(r);c[w]=TAB_ROLE_KEYS.filter(x=>S.has(x))}
  await saveItem("calendars",c);renderScreen()});
+
+/* calendar views: day, week, month, 3 months, list (next 30 days); the view is remembered on this device */
+function calView(){if(!window._calView){let v="";try{v=localStorage.getItem(LKEY+"-calView")||""}catch(x){}window._calView=["day","week","month","3m","list"].includes(v)?v:"week"}return window._calView}
+const calAnchor=()=>window._calA||ldate();
+const ymd=(y,m,d)=>ldateOf(new Date(y,m,d,12));
+const monthStart=d=>{const x=new Date(d+"T12:00:00");return ymd(x.getFullYear(),x.getMonth(),1)};
+const addMonths=(d,n)=>{const x=new Date(d+"T12:00:00");return ymd(x.getFullYear(),x.getMonth()+n,1)};
+const monthName=d=>new Date(d+"T12:00:00").toLocaleDateString(undefined,{month:"long",year:"numeric"});
+function calRange(V,A){if(V==="day")return {from:A,to:A,title:dayName(A)};
+ if(V==="week"){const w=weekStart(A);return {from:w,to:addDays(w,6),title:fmtDate(w)+" to "+fmtDate(addDays(w,6))}}
+ if(V==="month"){const m=monthStart(A);return {from:m,to:addDays(addMonths(m,1),-1),title:monthName(m)}}
+ if(V==="3m"){const m=monthStart(A);return {from:m,to:addDays(addMonths(m,3),-1),title:monthName(m)+" – "+monthName(addMonths(m,2))}}
+ return {from:A,to:addDays(A,29),title:"Next 30 days from "+fmtDate(A)}}
+const apOn=(d,pick)=>appts.filter(a=>a.date===d&&pick(a)).sort((a,b)=>toMin(a.time)-toMin(b.time));
+function monthGrid(m,pick,max){const first=m,last=addDays(addMonths(m,1),-1);let d=weekStart(first);const cells=[];
+ while(d<=last||cells.length%7){const L=apOn(d,pick),out=d<first||d>last;
+  cells.push(`<div class="mcell${out?" out":""}${d===ldate()?" today":""}"><button type="button" class="mday" data-calday="${d}" aria-label="${esc(dayName(d))}">${+d.slice(8)}</button>${out?"":L.slice(0,max).map(a=>{const C=calById(calOf(a));return `<button type="button" class="mitem" style="border-left-color:${esc(C.color)}" data-apedit="${esc(a.id)}" title="${esc((a.time||"")+" "+apTitle(a))}">${esc(((a.time||"").replace(/^0/,"")+" "+(apTitle(a)||a.kind)).trim())}</button>`}).join("")+(L.length>max?`<button type="button" class="mmore" data-calday="${d}">+${L.length-max} more</button>`:"")}</div>`);
+  d=addDays(d,1)}
+ return `<div class="mgrid">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(x=>`<div class="mhead">${x}</div>`).join("")}${cells.join("")}</div>`}
+function calBody(V,A,R,pick){
+ if(V==="day"){const L=apOn(A,pick);return `<div class="bcol" style="max-width:640px"><h3 style="margin:0">${esc(dayName(A))}${A===ldate()?' <span class="pill">Today</span>':""}</h3>${L.map(apCard).join("")||'<p class="note" style="margin:0">Nothing booked.</p>'}</div>`}
+ if(V==="week"){const days=[0,1,2,3,4,5,6].map(i=>addDays(R.from,i));
+  return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;align-items:start">${days.map(d=>{const L=apOn(d,pick);return `<div class="bcol" style="min-width:0${d===ldate()?";border-color:var(--accent)":""}"><h3 style="margin:0"><button type="button" class="linkbtn" data-calday="${d}">${esc(dayName(d))}</button>${d===ldate()?' <span class="pill">Today</span>':""}</h3>${L.map(apCard).join("")||'<p class="note" style="margin:0">Nothing booked.</p>'}</div>`}).join("")}</div>`}
+ if(V==="month")return monthGrid(R.from,pick,3)+`<p class="note">Tap a day to see it; tap an appointment to open it.</p>`;
+ if(V==="3m")return `<div class="m3 stack" style="gap:14px">${[0,1,2].map(i=>{const m=addMonths(R.from,i);return `<div><h3 style="margin:0 0 4px">${esc(monthName(m))} <span class="count">${appts.filter(a=>a.date>=m&&a.date<=addDays(addMonths(m,1),-1)&&pick(a)).length}</span></h3>${monthGrid(m,pick,2)}</div>`}).join("")}</div>`;
+ const out=[];for(let d=R.from;d<=R.to;d=addDays(d,1)){const L=apOn(d,pick);if(L.length)out.push(`<div class="bcol"><h3 style="margin:0">${esc(dayName(d))}</h3>${L.map(apCard).join("")}</div>`)}
+ return `<div class="stack" style="gap:10px;max-width:760px">${out.join("")||'<p class="note">Nothing booked in the next 30 days.</p>'}</div>`}
+document.addEventListener("click",ev=>{const b=ev.target.closest("[data-calview],[data-calnav],[data-calday]");if(!b||screen!=="schedule")return;
+ if(b.dataset.calview){window._calView=b.dataset.calview;try{localStorage.setItem(LKEY+"-calView",window._calView)}catch(x){}renderScreen();return}
+ if(b.dataset.calnav!==undefined){const n=+b.dataset.calnav,V=calView(),A=calAnchor();window._calA=!n?ldate():V==="day"?addDays(A,n):V==="week"?addDays(A,7*n):V==="month"?addMonths(A,n):V==="3m"?addMonths(A,3*n):addDays(A,30*n);renderScreen();return}
+ if(b.dataset.calday){window._calA=b.dataset.calday;window._calView="day";renderScreen();window.scrollTo({top:0})}});
 /* ---------- employees and crews ---------- */
 const pplF=()=>(window._pf=window._pf||{show:"active",q:""});
 function crewCard(c){const ed=canOffice(),mem=(c.members||[]),open=window._pcOpen===c.id;
@@ -2390,7 +2444,7 @@ function crewCard(c){const ed=canOffice(),mem=(c.members||[]),open=window._pcOpe
 function staffCard(x){const ed=canOffice(),cr=crewsOfStaff(x.id),open=window._psOpen===x.id;
  const login=x.uid?pname(x.uid):"";
  return `<details class="pcard" data-scard="${esc(x.id)}"${open?" open":""}><summary><span style="display:grid;gap:3px;min-width:0"><span style="display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center"><strong style="font-size:1rem">${esc(x.name||"Unnamed")}</strong><span class="pill">${esc(x.type||"")}</span>${x.active===false?'<span class="pill amber">Not active</span>':""}</span><span class="note" style="margin:0;overflow-wrap:anywhere">${esc([x.position,x.dept].filter(Boolean).join(" · ")||"No position yet")}</span>${cr.length?`<span class="note" style="margin:0">Crew: ${esc(cr.map(c=>c.name).join(", "))}</span>`:""}</span><span class="chev" aria-hidden="true">›</span></summary>
- ${ed?`<div class="stack" style="padding-top:6px"><div class="fields"><label>Name<input data-stf="${esc(x.id)}|name" value="${esc(x.name||"")}"></label><label>Position<input data-stf="${esc(x.id)}|position" value="${esc(x.position||"")}"></label><label>Department<input data-stf="${esc(x.id)}|dept" value="${esc(x.dept||"")}"></label><label>Type<select data-stf="${esc(x.id)}|type">${EMP_TYPES.map(t=>`<option${x.type===t?" selected":""}>${t}</option>`).join("")}</select></label><label>Employee ID<input data-stf="${esc(x.id)}|empId" value="${esc(x.empId||"")}"></label>${mode==="shared"&&team.length?`<label>App sign-in<select data-stf="${esc(x.id)}|uid"><option value="">Not linked</option>${team.map(m=>`<option value="${esc(m.id)}"${x.uid===m.id?" selected":""}>${esc(pname(m.id))}</option>`).join("")}</select></label>`:""}</div>
+ ${ed?`<div class="stack" style="padding-top:6px"><div class="fields"><label>Name<input data-stf="${esc(x.id)}|name" value="${esc(x.name||"")}"></label><label>Position<input data-stf="${esc(x.id)}|position" value="${esc(x.position||"")}"></label><label>Department<input data-stf="${esc(x.id)}|dept" value="${esc(x.dept||"")}"></label><label>Type<select data-stf="${esc(x.id)}|type">${EMP_TYPES.map(t=>`<option${x.type===t?" selected":""}>${t}</option>`).join("")}</select></label><label>Employee ID<input data-stf="${esc(x.id)}|empId" value="${esc(x.empId||"")}"></label>${mode==="shared"?`<label>App sign-in<select data-stf="${esc(x.id)}|uid"><option value="">Not linked</option>${empSignins(x.uid).map(([u,n])=>`<option value="${esc(u)}"${x.uid===u?" selected":""}>${esc(n)}</option>`).join("")}</select></label>`:""}</div>
  <label class="check"><input type="checkbox" data-stf="${esc(x.id)}|active" ${x.active!==false?"checked":""}>Active employee</label>${login?`<p class="note" style="margin:0">Signs in as ${esc(login)}. Jobs their crew is on show first when they clock in.</p>`:""}</div>`:""}</details>`}
 function peopleHtml(){const F=pplF(),q=String(F.q||"").trim().toLowerCase(),ed=canOffice();if(mode==="shared")wantNames(team.map(m=>m.id));
  const L=staff.filter(x=>(F.show==="all"||x.active!==false)&&(!q||[x.name,x.position,x.dept,x.type,...crewsOfStaff(x.id).map(c=>c.name)].join(" ").toLowerCase().includes(q))).sort((a,b)=>(a.active===false)-(b.active===false)||String(a.name).localeCompare(String(b.name)));
@@ -2460,8 +2514,8 @@ const billToName=i=>{const n=!isInt(i)?custName(i.custId):"";return [n,i.billTo]
 const billToAddr=i=>{const c=!isInt(i)&&custOK&&i.custId?custById(i.custId):null;return c?custAddr(c):""};
 const STORES={calendars:()=>cals,staff:()=>staff,crews:()=>crews,trmiles:()=>trnM,training:()=>trnP,classes:()=>trnC,homes:()=>homes,accounts:()=>accounts,wos:()=>wos,dlogs:()=>dlogs,coreqs:()=>coreqs,appts:()=>appts,timeclock:()=>tclock,punch:()=>punchItems,orders:()=>orders,costs:()=>jcosts,warranty:()=>wcalls,subs:()=>subs,actuals:()=>actuals};
 function setStore(n,v){if(n==="calendars"){cals=v;return}if(n==="staff"){staff=v;return}if(n==="crews"){crews=v;return}if(n==="trmiles"){trnM=v;return}if(n==="training"){trnP=v;return}if(n==="classes"){trnC=v;return}if(n==="actuals"){actuals=v;return}if(n==="dlogs"){const loc=dlogs.find(x=>x.id===window._dlid);dlogs=v.map(x=>loc&&x.id===loc.id&&dlCanEdit(loc)?loc:x)}else if(n==="coreqs")coreqs=v;else if(n==="appts")appts=v;else if(n==="timeclock"){tclock=v;window._tcLoaded=1}else if(n==="punch")punchItems=v;else if(n==="orders")orders=v;else if(n==="costs")jcosts=v;else if(n==="warranty")wcalls=v;else if(n==="subs")subs=v;else if(n==="invoices")invoices=v;else if(n==="jobs")jobs=v;else if(n==="homes"){const loc=screen==="home1"&&homes.find(x=>x.id===window._hid);homes=v.map(x=>loc&&x.id===loc.id?loc:x)}else if(n==="accounts")accounts=v;else if(n==="campaigns")campaigns=v;else wos=v}
-async function saveItem(n,item){if(mode==="shared"){try{const {id,...b}=item;await db.doc(n+"/"+id).set(b)}catch(err){toast("Couldn't save. Check your access and try again.")}}else{try{localStorage.setItem(LKEY+"-"+n,JSON.stringify(STORES[n]()))}catch(x){}}}
-function loadStores(){if(mode==="shared"){custInit();teamInit();["homes","accounts","wos","campaigns","invoices","jobs","dlogs","coreqs","appts","timeclock","punch","orders","costs","warranty","subs","actuals","training","classes","trmiles","staff","crews","calendars"].forEach(n=>db.collection(n).onSnapshot(s=>{setStore(n,s.docs.map(x=>({...x.data(),id:x.id})));render(true)},()=>{}))}
+async function saveItem(n,item){if(mode==="shared"){const k=n+"/"+item.id;pendStart(k);try{const {id,...b}=item;await db.doc(k).set(b)}catch(err){toast("Couldn't save. Check your access and try again.")}finally{pendEnd(k)}}else{try{localStorage.setItem(LKEY+"-"+n,JSON.stringify(STORES[n]()))}catch(x){}}}
+function loadStores(){if(mode==="shared"){custInit();teamInit();["homes","accounts","wos","campaigns","invoices","jobs","dlogs","coreqs","appts","timeclock","punch","orders","costs","warranty","subs","actuals","training","classes","trmiles","staff","crews","calendars"].forEach(n=>db.collection(n).onSnapshot(s=>{setStore(n,keepLocal(n,(STORES[n]?STORES[n]():n==="campaigns"?campaigns:n==="invoices"?invoices:n==="jobs"?jobs:[])||[],s.docs.map(x=>({...x.data(),id:x.id}))));render(true)},()=>{}))}
  else{["homes","accounts","wos","campaigns","invoices","jobs","dlogs","coreqs","appts","timeclock","punch","orders","costs","warranty","subs","actuals","training","classes","trmiles","staff","crews","calendars"].forEach(n=>{try{setStore(n,JSON.parse(localStorage.getItem(LKEY+"-"+n))||[])}catch(e){setStore(n,[])}});try{customers=JSON.parse(localStorage.getItem(LKEY+"-customers"))||[]}catch(e){customers=[]}try{custReqs=JSON.parse(localStorage.getItem(LKEY+"-custreq"))||[]}catch(e){custReqs=[]}custOK=true;custEdit=true}}
 const nextId=(pre,list)=>pre+"-"+(Math.max(1000,...list.map(x=>+String(x.id).split("-")[1]||0))+1);
 const today=()=>new Date().toISOString().slice(0,10);
@@ -3368,7 +3422,7 @@ const renderDetail=()=>renderScreen();
 function launchClock(){if(window._tcAsked)return;if(mode==="shared"&&!(window._tcLoaded&&me.ready&&teamLoaded))return;if(mode!=="shared"&&mode!=="local")return;window._tcAsked=1;if(!canField()||tcOpen(myId())||screen!=="home")return;window._tcLaunch=1;screen="time"}
 function clockChip(){const c=document.getElementById("clockChip");if(!c)return;if(!canField()||(mode==="shared"&&!window._tcLoaded)){c.hidden=true;return}const o=tcOpen(myId());c.hidden=false;
  c.className="badge clk "+(o?(onBreak(o)?"sample":"live"):"sample");c.textContent=o?`${onBreak(o)?"On break":"On the clock"} · ${jkLabel(o.job)}${o.code?" · "+o.code:""}`:"Not clocked in · tap to clock in"}
-const APP_VERSION="95",APP_DATE="Nov 10, 2026";
+const APP_VERSION="96",APP_DATE="Nov 10, 2026";
 function verStamp(){const el=document.getElementById("appVer");if(el)el.textContent=`App version ${APP_VERSION} · ${APP_DATE} · ${window._selfHost?"company server":mode==="shared"?"claude.ai":"this browser"}`}
 function renderScreen(){launchClock();verStamp();setTimeout(clockChip,0);
  applyTabs();
@@ -3750,7 +3804,7 @@ document.addEventListener("click",async ev=>{
  if(id==="returnEst"){const n=$("#retNote").value.trim();if(!n){toast("Add a return note first");return}unfreezeBook(e);e.status="returned";e.returnTo="est";e.returnNote=n;log(e,`Returned: ${n}`);await save(e);go("home");return}
 });
 document.addEventListener("change",async ev=>{const t=ev.target;
- if(t.id==="homeSearch"){window._hq=t.value;renderScreen();return}
+ if(t.id==="homeSearch")return;
  if(t.id==="woFilter"){window._wof=t.value;renderScreen();return}
  if(t.id==="moneyPeriod"){window._mp=t.value;renderScreen();return}
  if(t.id==="estFilter"){window._ef=t.value;renderScreen();return}
@@ -3916,6 +3970,7 @@ document.addEventListener("click",async ev=>{let b;
  if(b=ev.target.closest("[data-colage]")){colF().age=b.dataset.colage;renderScreen();return}
  if(b=ev.target.closest("[data-print]")){window.print();return}
 });
+document.addEventListener("input",ev=>{const t=ev.target;if(t.id!=="homeSearch")return;window._hq=t.value;clearTimeout(window._hqT);window._hqT=setTimeout(()=>{const pos=t.selectionStart;renderScreen();const n=document.getElementById("homeSearch");if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(x){}}},300)});
 document.addEventListener("input",ev=>{if(ev.target.id!=="custQ")return;const v=ev.target.value.trim().toLowerCase();document.querySelectorAll("[data-custrow]").forEach(r=>{r.hidden=!!v&&!r.dataset.custrow.includes(v)})});
 </script>
 

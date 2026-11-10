@@ -34,6 +34,8 @@ Known problems and their fixes. **Add a row whenever you fix something new:** sy
 | Nov 9, 2026 | Couldn't see the whole proposal preview on a phone | Fixed overlay with its own scroll area, cut off inside claude.ai | Preview is part of the page and scrolls normally (v87) | `app-crews.test.js` |
 | Nov 9, 2026 | Home profile didn't keep what was typed; no save button | A live update redrew the screen as focus moved between boxes, dropping the typing | Save as you type, Save/Done bar, no redraw while editing (v88) | `app-crews.test.js` "home profile saves" |
 | Nov 9, 2026 | Couldn't tell if a photo uploaded | Only a short toast | Upload count and progress on the screen; gallery or camera (v88–v89) | — |
+| Nov 10, 2026 | Some estimate visit answers didn't stick when several were changed quickly | A live update arrived while the save was on its way and replaced the record with the older copy | `pendStart`/`pendEnd`/`keepLocal`: records being saved are kept until the server has them (v96) | `app-crews.test.js` "live update arriving mid-save"; data-entry audit |
+| Nov 10, 2026 | Rachael's time didn't show anywhere for the office | Time is stored by sign-in; employees weren't linked to sign-ins, and the sign-in picker only listed the (empty) team list | Time → Employees lists time from unlinked sign-ins with a "This person is" picker; sign-in pickers list all server users (v96) | `app-crews.test.js` |
 | Nov 9, 2026 | Cloud tasks can't read server data | Network allowlist blocks the server | Server emails a daily training export (PR #7) | `server.test.js` "daily training email" |
 
 ## Where to look in the code

@@ -32,6 +32,19 @@ GitHub runs `npm test` on every pull request and every push to `main` (`.github/
 | `server-drive.test.js` | Google Drive photo copy against a fake Google: connect (wrong state refused), folder per home, upload, never copied twice, secret never shown, owner only; health reports the version |
 | `server.test.js` | Owner setup and second-setup refusal; sign-in; signed-out requests refused; save, merge, list and delete; access rules; bad paths; admin-only pages; the daily training email, including a wrong mailbox password |
 
+## Data-entry audit (before big releases)
+
+`tests/audit/data-entry-audit.js` runs the real `server.js` with a backup's records, signs in as owner (Office role), opens every screen, changes every box, dropdown and checkbox, reloads, and reports what was kept. It also checks every search box filters. Not part of `npm test` (about 15 minutes).
+
+```
+PW_MODULE=… PW_CHROMIUM=… node tests/audit/data-entry-audit.js backup.json report.json
+ONLY="Home profile" node tests/audit/data-entry-audit.js backup.json report.json   # one screen
+```
+
+Reading the report: **SAVED** is good. **NOT SAVED** on a filter (Period, Show, Company) is expected: filters reset. **not kept until a button** is a form with an Add/Save button. **could not set** usually means the box is inside a closed fold-out section (open it and check by hand).
+
+First run, Nov 10, 2026 found: estimate visit answers lost when several were changed quickly (live update overwrote the record mid-save; fixed with `pendStart`/`keepLocal`), the job screen's cost-code picker not saving, and Homes search needing Enter. All fixed in v96.
+
 ## How the app tests work
 
 `tests/lib/harness.js` opens `app.html` from disk in headless Chromium with a fake `window.claude` (database and user). Seed data:
