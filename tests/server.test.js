@@ -151,3 +151,18 @@ test('data stays outside the app folder', async () => {
   assert.ok(fs.existsSync(path.join(dataDir, 'db')));
   assert.ok(!fs.existsSync(path.join(ROOT, 'data', 'db', 'training')), 'nothing written beside server.js');
 });
+
+test('admins fix a typo in a name or email; the person signs in with the new email', async () => {
+  const add = await owner.form('/admin/add', { name: 'Rachael aaLEXANDER', email: 'typo@test.local', password: 'typo-password-1', admin: '' });
+  assert.equal(add.status, 303);
+  const id = (await (await owner.go('/api/users')).json()).find(u => u.name === 'Rachael aaLEXANDER').id;
+  let r = await owner.form('/admin/edit', { id, name: 'Rachael Alexander', email: 'tech@test.local' });
+  assert.match(decodeURIComponent(r.headers.get('location')), /already used/);
+  r = await owner.form('/admin/edit', { id, name: 'Rachael Alexander', email: 'rachael@test.local' });
+  assert.match(decodeURIComponent(r.headers.get('location')), /sign in with rachael@test\.local/);
+  assert.ok((await (await owner.go('/api/users')).json()).some(u => u.name === 'Rachael Alexander'));
+  const c = client();
+  assert.equal((await c.form('/login', { email: 'typo@test.local', password: 'typo-password-1' })).status, 401);
+  assert.equal((await c.form('/login', { email: 'rachael@test.local', password: 'typo-password-1' })).status, 303);
+  assert.equal((await member.form('/admin/edit', { id, name: 'X', email: 'x@test.local' })).status, 403, 'members cannot edit');
+});

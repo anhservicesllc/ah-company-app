@@ -1,6 +1,6 @@
 {
  "name": "ah-company-app",
- "version": "94.0.0",
+ "version": "95.0.0",
  "description": "A&H company app and company server",
  "private": true,
  "main": "server.js",
