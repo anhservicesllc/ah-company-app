@@ -79,3 +79,45 @@ test('job without an estimate: PM adds a change order; crew opens it, adds a not
   assert.deepStrictEqual(app.errors, []);
   await app.close();
 });
+
+test('estimate & proposal documents: links, saved proposal copy, upload/replace/remove; hidden from crew', async () => {
+  const app = await openApp({ role: 'senior' });
+  const p = app.page;
+  await p.evaluate(() => { me.admin = false; assets = { upload: async f => ({ id: 'd' + Math.random().toString(36).slice(2), url: '' }) }; modelPdf = async () => new Blob(['%PDF-1.4'], { type: 'application/pdf' }); const e = ests[0]; e.status = 'sent'; e.sentAt = new Date().toISOString(); window._eT = e.id; openEstimate(e.id); });
+  await p.waitForTimeout(500);
+  const box = p.locator('[data-estdocs]');
+  assert.match(await box.textContent(), /Customer proposal/);
+  assert.equal(await box.locator('[data-proppv]').count(), 1); assert.equal(await box.locator('[data-proppdf]').count(), 1);
+  await p.click('[data-propsnap]'); await p.waitForTimeout(400);
+  let d = await p.evaluate(() => ests.find(x => x.id === window._eT).estDocs.map(x => x.name));
+  assert.equal(d.length, 1); assert.match(d[0], /^Proposal .* as sent \d{4}-\d\d-\d\d\.pdf$/);
+  await p.setInputFiles('input[data-edup]', { name: 'wrong.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4') });
+  await p.waitForTimeout(300);
+  await p.locator('input[data-edrep]').nth(1).setInputFiles({ name: 'original-estimate.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4') });
+  await p.waitForTimeout(300);
+  d = await p.evaluate(() => ests.find(x => x.id === window._eT).estDocs.map(x => x.name));
+  assert.equal(d[1], 'original-estimate.pdf');
+  await p.locator('[data-edrm]').nth(1).click(); await p.locator('[data-edrm]').nth(1).click(); await p.waitForTimeout(300);
+  assert.equal(await p.evaluate(() => ests.find(x => x.id === window._eT).estDocs.length), 1);
+  // job file of that estimate: link back to the estimate; crew don't see the box
+  await p.evaluate(() => { window._dlj = 'est|' + window._eT; go('dlog'); }); await p.waitForTimeout(300);
+  assert.equal(await p.locator('[data-estdocs] [data-estopen]').count(), 1);
+  await app.setRole('crew'); await p.evaluate(() => go('dlog')); await p.waitForTimeout(300);
+  assert.equal(await p.locator('[data-estdocs]').count(), 0);
+  assert.deepStrictEqual(app.errors, []);
+  await app.close();
+});
+
+test('PM opens an invoice from the job billing screen without the Money tab', async () => {
+  const app = await openApp({ role: 'pm' });
+  const p = app.page;
+  await p.evaluate(() => { me.admin = false; mode = 'shared'; });
+  assert.equal(await p.evaluate(() => tabOK('money')), false);
+  const ok = await p.evaluate(async () => { const j = newJob('Service work'); j.name = 'Garbage disposal'; j.contract = 300; const i = { id: 'INV-T1', number: 'T1', src: 'job', ref: j.id, lines: [{ desc: 'Work', amt: 300 }], date: ldate() }; invoices.push(i); window._iid = i.id; window._jbid = j.id; go('inv'); await new Promise(r => setTimeout(r, 200)); return screen; });
+  assert.equal(ok, 'inv');
+  await p.click('[data-invback]'); await p.waitForTimeout(200);
+  assert.equal(await p.evaluate(() => screen), 'job');
+  await app.setRole('crew'); await p.evaluate(() => go('inv')); await p.waitForTimeout(200);
+  assert.notEqual(await p.evaluate(() => screen), 'inv');
+  await app.close();
+});
