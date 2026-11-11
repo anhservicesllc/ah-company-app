@@ -340,6 +340,35 @@ async function sendReminders(now) {
 }
 setInterval(() => { sendReminders().catch(() => {}); }, 5 * 60e3).unref();
 
+
+/* ---------- calendar subscription feeds ----------
+   Each person can make a private link that Google Calendar, iPhone/iCloud or Outlook subscribe to. "mine" = the
+   appointments they are on; "all" = every appointment on the app calendars their roles can see. Read-only; the link
+   works without signing in, so it is long and random, and making a new one turns the old one off. */
+const CAL_VIEW0 = { 'cal-est': ['tech', 'est', 'senior', 'office'], 'cal-field': ['crew', 'senior', 'office', 'pm'], 'cal-office': ['office', 'senior'], 'cal-vendor': ['office', 'senior', 'pm'] };
+const calOfA = a => a.cal || (a.kind === 'Delivery' ? 'cal-vendor' : ['Install start', 'Service call', 'Closeout', 'Inspection'].includes(a.kind) ? 'cal-field' : a.kind === 'Other' ? 'cal-office' : 'cal-est');
+function icsEsc(t) { return String(t || '').replace(/\\/g, '\\\\').replace(/[,;]/g, c => '\\' + c).replace(/\r?\n/g, '\\n'); }
+function icsFold(l) { const out = []; while (Buffer.byteLength(l) > 74) { let n = 74; while (Buffer.byteLength(l.slice(0, n)) > 74) n--; out.push(l.slice(0, n)); l = ' ' + l.slice(n); } out.push(l); return out.join('\r\n'); }
+function calFeed(u, scope) {
+  const tm = readDoc(['office', 'private', 'team', u.id]) || {}, roles = new Set(tm.roles || []);
+  const cals = {}; for (const [k, v] of Object.entries(CAL_VIEW0)) cals[k] = v; for (const c of listCol(['calendars'])) if (c.data && Array.isArray(c.data.view)) cals[c.id] = c.data.view;
+  const from = new Date(Date.now() - 60 * 864e5).toISOString().slice(0, 10), to = new Date(Date.now() + 400 * 864e5).toISOString().slice(0, 10);
+  const pad = n => String(n).padStart(2, '0'), stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+  const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//A&H Services//App//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:' + icsEsc(scope === 'mine' ? 'A&H – my appointments' : 'A&H – appointments'), 'X-WR-TIMEZONE:America/Denver', 'X-PUBLISHED-TTL:PT15M', 'REFRESH-INTERVAL;VALUE=DURATION:PT15M'];
+  for (const x of listCol(['appts'])) {
+    const a = x.data || {}; if (!a.date || a.date < from || a.date > to || a.status === 'Canceled') continue;
+    const fx = a.fx || {}, who = fx.who || [];
+    if (scope === 'mine' ? !who.includes(u.id) : !(u.admin || (cals[calOfA(a)] || []).some(r => roles.has(r)))) continue;
+    const d = a.date.replace(/-/g, ''), [hh, mm] = String(a.time || '').split(':').map(Number), st = (hh || 0) * 60 + (mm || 0), en = Math.min(st + (+a.dur || 60), 23 * 60 + 59);
+    const T = m => `${d}T${pad(Math.floor(m / 60))}${pad(m % 60)}00`;
+    const title = (a.kind || 'Appointment') + (fx.title ? ' – ' + fx.title : a.label ? ' – ' + a.label : '');
+    L.push('BEGIN:VEVENT', 'UID:' + x.id + '@anh-app', 'DTSTAMP:' + stamp,
+      ...(a.time ? ['DTSTART;TZID=America/Denver:' + T(st), 'DTEND;TZID=America/Denver:' + T(en)] : ['DTSTART;VALUE=DATE:' + d, 'DTEND;VALUE=DATE:' + new Date(Date.parse(a.date + 'T12:00:00Z') + 864e5).toISOString().slice(0, 10).replace(/-/g, '')]),
+      'SUMMARY:' + icsEsc(title), ...(fx.loc || a.loc ? ['LOCATION:' + icsEsc(fx.loc || a.loc)] : []), 'DESCRIPTION:' + icsEsc([fx.cal ? 'Calendar: ' + fx.cal : '', fx.whoNames ? 'With: ' + fx.whoNames : '', a.status && a.status !== 'Scheduled' ? 'Status: ' + a.status : '', a.notes || ''].filter(Boolean).join('\n')),
+      ...(a.status === 'Tentative' ? ['STATUS:TENTATIVE'] : ['STATUS:CONFIRMED']), 'END:VEVENT');
+  }
+  L.push('END:VCALENDAR'); return L.map(icsFold).join('\r\n') + '\r\n';
+}
 /* ---------- router ---------- */
 const server = http.createServer(async (req, res) => {
   try {
@@ -358,6 +387,11 @@ const server = http.createServer(async (req, res) => {
       icons: [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }, { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }, { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }] }), 'application/manifest+json');
     if (/^\/icons\/icon-(180|192|512|maskable-512)\.png$/.test(p)) { const f = path.join(ROOT, p.slice(1)); if (!fs.existsSync(f)) return send(res, 404, 'not found');
       res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=604800', 'X-Content-Type-Options': 'nosniff' }); return fs.createReadStream(f).pipe(res); }
+    { const m = /^\/cal\/([a-f0-9]{40})(?:\.ics)?$/.exec(p); if (m) {
+      let hit = null; for (const u of users) for (const sc of ['mine', 'all']) if (!u.disabled && u.cal && u.cal[sc] === m[1]) hit = [u, sc];
+      if (!hit) return send(res, 404, 'not found');
+      res.writeHead(200, { 'Content-Type': 'text/calendar; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Content-Type-Options': 'nosniff', 'Content-Disposition': 'inline; filename="ah-' + hit[1] + '.ics"' });
+      return res.end(calFeed(hit[0], hit[1])); } }
     if (p === '/api/health') return send(res, 200, { ok: true, app: 'ah-estimating', version: APP_VER, users: users.length > 0, ai: aiOn(), drive: gdOn() });
 
     /* sign in / out / first run */
@@ -481,6 +515,11 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/me') return send(res, 200, { id: me.id, name: me.name, email: me.email, admin: me.admin, owner: me.owner });
     if (p === '/api/users') return send(res, 200, users.filter(x => !x.disabled).map(x => ({ id: x.id, name: x.name })));
     if (p === '/api/rev') return send(res, 200, { rev });
+    if (p === '/api/calfeed') {
+      const u = users.find(x => x.id === me.id); if (!u) return send(res, 404, { error: 'no user' });
+      if (req.method === 'POST') { const b = await readJSONBody(req) || {}; const sc = b.scope === 'all' ? 'all' : 'mine'; u.cal = { ...(u.cal || {}), [sc]: b.off ? undefined : crypto.randomBytes(20).toString('hex') }; saveUsers(); audit(who, (b.off ? 'turned off ' : 'new ') + sc + ' calendar link'); }
+      return send(res, 200, { mine: (u.cal || {}).mine || null, all: (u.cal || {}).all || null });
+    }
 
     if (p === '/api/col' || p === '/api/doc') {
       const s = segs(q.path); const isCol = p === '/api/col';
