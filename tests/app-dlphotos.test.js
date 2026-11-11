@@ -72,3 +72,22 @@ test('job screen (from Money) has the photo box too', async () => {
   assert.deepStrictEqual(app.errors, []);
   await app.close();
 });
+
+test('job links open the job file; Contract & invoices goes to billing and back', async () => {
+  const app = await openApp({ role: 'office' });
+  const p = app.page;
+  const id = await p.evaluate(() => { const j = newJob('Service work'); j.name = 'Garbage disposal'; j.noEstimate = true; go('board'); return j.id; });
+  await p.waitForTimeout(400);
+  await p.locator(`[data-openjob="${id}"]`).first().click(); await p.waitForTimeout(400);
+  assert.equal(await p.evaluate(() => screen), 'dlog');
+  assert.match(await p.textContent('#view, main, body'), /Job file · /);
+  await p.click(`[data-jobbill="${id}"]`); await p.waitForTimeout(300);
+  assert.equal(await p.evaluate(() => screen), 'job');
+  await p.click('[data-jbback]'); await p.waitForTimeout(300);
+  assert.equal(await p.evaluate(() => screen + '|' + window._dlj), 'dlog|job|' + id);
+  // crew don't get the billing button
+  await app.setRole('crew'); await p.evaluate(() => go('dlog')); await p.waitForTimeout(300);
+  assert.equal(await p.locator('[data-jobbill]').count(), await p.evaluate(() => canOffice() ? 1 : 0));
+  assert.deepStrictEqual(app.errors, []);
+  await app.close();
+});
