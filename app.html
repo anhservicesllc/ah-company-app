@@ -955,6 +955,7 @@ function pricedView(e){syncState(e);
  h+=subPanel(e,ed);
  h+=materialsHtml(e);
  h+=changeOrdersHtml(e);
+ h+=albumHtml("est|"+e.id,{title:"Estimate photos",tags:JOB_PHOTOS,logs:1});
  h+=estMoneyHtml(e);h+=closeoutBox(e);
  h+=allowView(e,["estimator","returned"].includes(e.status)&&role()==="est");
  const sel=totals(e);
@@ -1303,7 +1304,9 @@ const dlCanEdit=L=>!!L&&!L.submitted&&role()!=="view"&&L.date===ldate()&&L.by===
 const dlQs=J=>(cfg.logQs||[]).filter(q=>q&&q.q&&(!q.trade||q.trade==="all"||(J?.scopes||[]).some(x=>x.toLowerCase().includes(String(q.trade).toLowerCase()))));
 function dlMissing(L){const J=jobInfo(L.job),m=[];if(!(L.codes||[]).length)m.push("cost code");if(!String(L.work||"").trim())m.push("work completed");if(!L.weather?.desc)m.push("weather");
  dlQs(J).forEach(q=>{const a=L.answers?.[q.q];if(q.type==="photo"?!(a||[]).length:(a===undefined||a===""))m.push(q.q)});return m}
-const dlPhotos=(P,big)=>(P||[]).length?`<div class="thumbs">${P.map(f=>`<a href="/_blob/${esc(f.id)}" target="_blank" rel="noopener" title="${esc([f.tag,f.cap].filter(Boolean).join(": "))}" style="display:grid;gap:2px;text-decoration:none"><img src="/_blob/${esc(f.id)}" alt="${esc(f.tag||"Photo")}" loading="lazy"${big?' style="width:150px;height:150px"':""}><span class="note">${esc(f.tag||"")}${f.cap?": "+esc(f.cap):""}</span></a>`).join("")}</div>`:"";
+const PHB='class="btn small" style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--ink);cursor:pointer"';
+const photoBtns=(attr,lbl)=>`<span class="actions" style="gap:6px"><label ${PHB}>📷 Take photo<input type="file" accept="image/*" capture="environment" ${attr} aria-label="${esc((lbl||"Photo")+": take photo")}" hidden></label><label ${PHB}>Upload photos<input type="file" accept="image/*" multiple ${attr} aria-label="${esc((lbl||"Photo")+": upload photos")}" hidden></label></span>`;
+const dlPhotos=(P,big)=>(P||[]).length?`<div class="thumbs">${P.map(f=>`<a href="/_blob/${esc(f.id)}" target="_blank" rel="noopener" title="${esc([f.tag,f.cap].filter(Boolean).join(": "))}" style="display:grid;gap:2px;text-decoration:none"><img src="/_blob/${esc(f.id)}" alt="${esc(f.tag||"Photo")}" loading="lazy"${big?' style="width:150px;height:150px"':""}><span class="note">${esc(f.tag||"")}${f.cap?": "+esc(f.cap):""}${f.role?`<br>${esc(ROLE_NAME[f.role]||f.role)}`:""}</span></a>`).join("")}</div>`:"";
 function dlCard(L){const w=L.weather||{},lk=L.submitted||L.date<ldate();
  return `<div class="rrow" style="display:grid;gap:4px"><div class="actions" style="justify-content:space-between"><strong>${esc(fmtDate(L.date))} · ${esc(pname(L.by))}</strong><button class="btn small" type="button" data-dlopen="${esc(L.id)}">${dlCanEdit(L)?"Open":"View"}</button></div>
  <span class="note">${(L.codes||[]).length?"Cost code "+esc(L.codes.join(", "))+" · ":""}${w.desc?esc(w.desc)+(w.hi!=null&&w.hi!==""?` ${esc(w.hi)}°/${esc(w.lo)}°`:"")+" · ":""}${(L.photos||[]).length} photo${(L.photos||[]).length===1?"":"s"}${L.delay&&L.delay!=="None"?" · Delay: "+esc(L.delay):""}${L.safety==="Yes"?' · <span class="pill red">Safety</span>':""}</span>
@@ -1313,12 +1316,12 @@ function coReqForm(){const P=window._coPh||[];
  return `<div class="box stack" style="margin-bottom:12px"><h3 style="margin:0">Change order request</h3><p class="note" style="margin:0">Goes to the estimator to price. Don't do the extra work until the customer has signed the change order.</p> ${sayBox("co","Say what changed","e.g. Found rotted subfloor under the tub, about 4 by 5 feet, needs to be replaced before the pan goes in.","Fill in the request")}
  <label>What needs to change<textarea id="crDesc" rows="2" placeholder="e.g. Rotted subfloor under the tub, about 4 × 5 ft"></textarea></label>
  <div class="fields"><label>Why<select id="crWhy">${["Hidden damage","Customer request","Code or inspection","Design change","Other"].map(o=>`<option>${o}</option>`).join("")}</select></label><label>Quantity or size (if known)<input id="crQty"></label></div>
- <label>Photos<input type="file" accept="image/*" multiple data-crphoto="1"></label>${dlPhotos(P)}
+ <div><span class="note">Photos</span>${photoBtns('data-crphoto="1"',"Change order")}</div>${dlPhotos(P)}
  <div class="actions"><button class="btn primary" type="button" data-crsend="1">Send to estimator</button><button class="btn" type="button" data-crcancel="1">Cancel</button></div></div>`}
 function dlogHtml(key){const J=jobInfo(key);if(!J)return `<div class="actions"><button class="btn small" data-go="board" type="button">‹ Job board</button></div><p class="note">Job not found.</p>`;
  const L=dlogs.filter(x=>x.job===key).sort((a,b)=>(b.date+b.at).localeCompare(a.date+a.at)),RQ=coreqs.filter(x=>x.job===key).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
  wantNames([...L.map(x=>x.by),...RQ.map(x=>x.by)]);
- const canLog=role()!=="view",office=me.admin||mode!=="shared"||["office","senior","est"].includes(role());
+ const canLog=role()!=="view",office=me.admin||mode!=="shared"||["office","senior","est","pm"].includes(role());
  return `<div class="actions" style="margin-bottom:10px"><button class="btn small" data-go="board" type="button">‹ Job board</button></div>
  ${J.kind==="est"&&canOffice()?docsBar(J.obj):""}<div class="hero"><div><h2>Job file · ${esc(J.no)}</h2><p class="lede" style="margin:0">${esc(J.title)}. Crew, daily log, punch list, material orders, costs and warranty calls for this job. Everyone who clocks in on this job files one daily log entry for the day: work done, photos, weather and anything the office should know. Once an entry is submitted it can't be changed, and an unsubmitted draft locks when the day ends. Later fixes are added as dated notes.</p></div>
  <div class="actions">${canLog?`<button class="btn primary" type="button" data-dlnew="1">My entry for today</button><button class="btn" type="button" data-dlco="1">Request a change order</button>`:""}<button class="btn" type="button" data-dlprint="all">Print or save the log</button></div></div>
@@ -1326,14 +1329,14 @@ function dlogHtml(key){const J=jobInfo(key);if(!J)return `<div class="actions"><
  ${crewBox(J)}<h3 style="margin:0 0 8px">Daily log</h3>
  <div class="box stack">${L.length?L.map(dlCard).join(""):`<p class="note" style="margin:0">No entries yet.</p>`}</div>
  ${RQ.length?`<div class="box stack" style="margin-top:12px"><h3 style="margin:0">Change order requests from the field</h3>${RQ.map(r=>`<div class="rrow" style="display:grid;gap:4px"><div><strong>${esc(r.desc)}</strong> <span class="pill ${r.status==="Priced"?"green":r.status==="Declined"?"red":"amber"}">${esc(r.status)}</span></div><span class="note">${esc(r.reason||"")}${r.qty?" · "+esc(r.qty):""} · ${esc(pname(r.by))} · ${esc(fmtDate(String(r.at).slice(0,10)))}</span>${dlPhotos(r.photos)}</div>`).join("")}<p class="note" style="margin:0">${J.kind==="est"?"The estimator prices these on the estimate under Change orders.":"The office prices these and gets the customer's signed OK before the work."}</p></div>`:""}
- ${punchBox(J)}${ordersBox(J)}${costsBox(J)}${actualsBox(J)}${warrantyBox(J)}
+ ${albumHtml(J.key,{title:"Job photos",logs:1})}${punchBox(J)}${ordersBox(J)}${costsBox(J)}${actualsBox(J)}${warrantyBox(J)}
  ${office?bbBox(key,J):""}`}
 function dlEntryHtml(L){const J=jobInfo(L.job)||{scopes:[],no:"",title:"",st:"NV"},ed=dlCanEdit(L),dis=ed?"":"disabled",codes=CODES(),qs=dlQs(J),w=L.weather||{};
  wantNames([L.by,...(L.addenda||[]).map(a=>a.by)]);
  const ta=(k,l,r=2)=>`<label>${l}<textarea rows="${r}" data-dlf="${k}" ${dis}>${esc(L[k]||"")}</textarea></label>`;
  const sel=(k,l,o)=>`<label>${l}<select data-dlf="${k}" ${dis}>${o.map(x=>`<option${(L[k]||o[0])===x?" selected":""}>${x}</option>`).join("")}</select></label>`;
  const inp=(k,l)=>`<label>${l}<input data-dlf="${k}" value="${esc(L[k]||"")}" ${dis}></label>`;
- const qh=q=>{const a=L.answers?.[q.q];if(q.type==="photo")return `<div class="photo"><span>${esc(q.q)}</span>${ed?`<input type="file" accept="image/*" multiple data-dlqphoto="${esc(q.q)}" aria-label="${esc(q.q)}">`:""}${dlPhotos(a)}</div>`;
+ const qh=q=>{const a=L.answers?.[q.q];if(q.type==="photo")return `<div class="photo"><span>${esc(q.q)}</span>${ed?photoBtns(`data-dlqphoto="${esc(q.q)}"`,q.q):""}${dlPhotos(a)}</div>`;
   if(q.type==="yes-no")return `<div class="cond"><span>${esc(q.q)}</span><select data-dlq="${esc(q.q)}" class="${a?"":"missing"}" ${dis}>${["","Yes","No","Not applicable"].map(o=>`<option${a===o?" selected":""}>${o}</option>`).join("")}</select></div>`;
   return `<label>${esc(q.q)}<input data-dlq="${esc(q.q)}" ${q.type==="number"?'type="number" step="any"':""} value="${esc(a??"")}" class="${a===undefined||a===""?"missing":""}" ${dis}></label>`};
  return `<div class="actions" style="margin-bottom:10px"><button class="btn small" type="button" data-dlback="1">‹ Daily log</button>${!ed?`<button class="btn small" type="button" data-dlprint="${esc(L.id)}">Print this day</button>`:""}</div>
@@ -1350,10 +1353,10 @@ function dlEntryHtml(L){const J=jobInfo(L.job)||{scopes:[],no:"",title:"",st:"NV
  <div class="fields">${sel("safety","Safety incident or near miss?",["No","Yes"])}${inp("safetyNote","Safety details")}</div>
  ${ta("tomorrow","Plan for tomorrow")}
  ${qs.length?`<div class="stack"><h3 style="margin:0">Job questions</h3>${qs.map(qh).join("")}</div>`:""}
- <div><h3>Photos</h3>${ed?`<div class="fields"><label>Tag<select id="dlTag"><option>Before</option><option selected>During</option><option>After</option><option>Issue</option></select></label><label>Caption (optional)<input id="dlCap"></label><label>Add photos<input type="file" accept="image/*" multiple data-dlphoto="1"></label></div>`:""}${dlPhotos(L.photos)||`<p class="note" style="margin:0">No photos.</p>`}</div>
+ <div><h3>Photos</h3>${ed?`<div class="fields"><label>Tag<select id="dlTag"><option>Before</option><option selected>During</option><option>After</option><option>Issue</option></select></label><label>Caption (optional)<input id="dlCap"></label></div>${photoBtns('data-dlphoto="1"',"Daily log")}<p class="note" style="margin:0">On a phone, Take photo opens the camera; Upload photos picks from your photos or files. Each photo is saved with your role (${esc(ROLE_NAME[role()]||role())}).</p>`:""}${dlPhotos(L.photos)||`<p class="note" style="margin:0">No photos.</p>`}</div>
  ${ed?`<div class="actions" id="dlSubmitRow">${dlSubmitRow(L)}</div>`:""}
  <div><h3>Later notes</h3>${(L.addenda||[]).map(a=>`<div class="rrow"><span class="mono">${esc(new Date(a.at).toLocaleString())}</span> · ${esc(pname(a.by))}: ${esc(a.t)}</div>`).join("")||`<p class="note" style="margin:0">None.</p>`}
- ${!ed&&role()!=="view"?`<label style="margin-top:8px">Add a note (the original entry stays as it was)<textarea id="dlAdd" rows="2"></textarea></label><div class="actions" style="margin-top:6px"><button class="btn small" type="button" data-dladd="1">Add note</button></div>`:""}</div></div>`}
+ ${!ed&&role()!=="view"?`<label style="margin-top:8px">Add a note (the original entry stays as it was)<textarea id="dlAdd" rows="2"></textarea></label><div class="actions" style="margin-top:6px"><button class="btn small" type="button" data-dladd="1">Add note</button></div><label style="margin-top:8px">Photo caption (optional)<input id="dlLateCap"></label>${photoBtns('data-dllate="1"',"Add photos to this log")}<span class="note">Photos added later are marked "Added later"; the original log stays as filed.</span>`:""}</div></div>`}
 function dlSubmitRow(L){const m=dlMissing(L);return `<button class="btn primary" type="button" data-dlsubmit="1" ${m.length?"disabled":""}>Submit today's entry</button>${m.length?`<span class="missingNote">Missing: ${esc(m.join(", "))}</span>`:`<span class="pill green">Complete</span><span class="note">Once submitted it can't be changed; fixes are added as dated notes.</span>`}`}
 function dlPrintHtml(key,which){const J=jobInfo(key)||{no:"",title:""};const L=dlogs.filter(x=>x.job===key&&(which==="all"||x.id===which)).sort((a,b)=>(a.date+a.at).localeCompare(b.date+b.at));
  const row=(l,v)=>v&&v!=="None"&&v!=="No"?`<li><strong>${l}:</strong> ${esc(v)}</li>`:"";
@@ -1435,11 +1438,13 @@ document.addEventListener("change",async ev=>{const t=ev.target;
  if(t.dataset.bbfile&&t.files&&t.files[0]){const txt=await t.files[0].text();window._bb={key:window._dlj,parsed:bbParse(txt)};renderScreen();return}
  if(t.dataset.bbproj!==undefined&&window._bb){window._bb.proj=t.value;renderScreen();return}
  if(t.dataset.crphoto&&t.files){const desc=$("#crDesc")?.value||"",why=$("#crWhy")?.value,qty=$("#crQty")?.value||"";await dlUpload([...t.files],p=>{window._coPh=[...(window._coPh||[]),{...p,tag:"Change order"}]});renderScreen();if($("#crDesc")){$("#crDesc").value=desc;$("#crWhy").value=why;$("#crQty").value=qty}return}
- if(screen!=="dlog1")return;const L=dlCur();if(!L||!dlCanEdit(L))return;
+ if(screen!=="dlog1")return;
+ if(role()!=="view"&&t.dataset.dllate&&t.files){const L=dlCur();if(!L)return;const cap=($("#dlLateCap")?.value||"").trim();await dlUpload([...t.files],p=>{L.photos=[...(L.photos||[]),{...p,tag:"Added later",cap,by:myId(),role:role(),late:1}]});t.value="";await saveItem("dlogs",L);renderScreen();toast("Photos added");return}
+ const L=dlCur();if(!L||!dlCanEdit(L))return;
  if(t.dataset.dlcode){const S=new Set(L.codes||[]);t.checked?S.add(t.dataset.dlcode):S.delete(t.dataset.dlcode);L.codes=[...S]}
  else if(t.dataset.dlprog){L.progress={...(L.progress||{}),[t.dataset.dlprog]:t.value}}
- else if(t.dataset.dlphoto&&t.files){const tag=$("#dlTag").value,cap=$("#dlCap").value.trim();await dlUpload([...t.files],p=>{L.photos=[...(L.photos||[]),{...p,tag,cap}]});await saveItem("dlogs",L);renderScreen();toast("Photos saved");return}
- else if(t.dataset.dlqphoto&&t.files){const q=t.dataset.dlqphoto;await dlUpload([...t.files],p=>{L.answers={...(L.answers||{}),[q]:[...((L.answers||{})[q]||[]),{...p,tag:q}]}});await saveItem("dlogs",L);renderScreen();return}
+ else if(t.dataset.dlphoto&&t.files){const tag=$("#dlTag").value,cap=$("#dlCap").value.trim();await dlUpload([...t.files],p=>{L.photos=[...(L.photos||[]),{...p,tag,cap,by:myId(),role:role()}]});t.value="";await saveItem("dlogs",L);renderScreen();toast("Photos saved");return}
+ else if(t.dataset.dlqphoto&&t.files){const q=t.dataset.dlqphoto;await dlUpload([...t.files],p=>{L.answers={...(L.answers||{}),[q]:[...((L.answers||{})[q]||[]),{...p,tag:q,by:myId(),role:role()}]}});await saveItem("dlogs",L);renderScreen();return}
  else if(t.dataset.dlw==="desc"||t.dataset.dlq||t.dataset.dlf){t.classList.toggle("missing",t.value==="")}
  clearTimeout(dlT);await saveItem("dlogs",L);dlRefreshRow(L)});
 
@@ -1615,6 +1620,25 @@ const newId=p=>p+"-"+Date.now().toString(36)+Math.random().toString(36).slice(2,
 const canOffice=()=>mode!=="shared"||me.admin||["office","senior","est","pm"].includes(role());
 const canField=()=>role()!=="view";
 async function jobSave(J){if(J.kind==="est")await save(J.obj);else await saveItem(J.kind==="wo"?"wos":"jobs",J.obj)}
+/* photo album on a job or estimate: obj.album=[{id,tag,cap,by,role,at}] — anyone working (not view only) adds; the office or the person who added one can remove it */
+const ALB_TAGS=["Before","During","After","Issue","Measure","Materials","Other"];
+function albumHtml(key,opts){const J=jobInfo(key);if(!J)return "";const o=J.obj,A=o.album||[],tags=[...((opts&&opts.tags)||[]),...ALB_TAGS],can=role()!=="view";
+ const F=window._albF&&window._albF[key]||"",shown=F?A.filter(f=>f.tag===F):A,used=[...new Set(A.map(f=>f.tag))];wantNames(A.map(f=>f.by).filter(Boolean));
+ const lg=(opts&&opts.logs)?dlogs.filter(L=>L.job===key).flatMap(L=>[...(L.photos||[]),...Object.values(L.answers||{}).filter(Array.isArray).flat()].map(f=>({...f,date:L.date}))):[];
+ return `<div class="box stack" style="margin-top:12px" data-album="${esc(key)}"><div class="actions" style="justify-content:space-between"><h3 style="margin:0">${esc((opts&&opts.title)||"Photos")} <span class="note">(${A.length})</span></h3>${used.length>1?`<select aria-label="Show photos tagged" data-albf="${esc(key)}"><option value="">All tags</option>${used.map(t=>`<option ${F===t?"selected":""}>${esc(t)}</option>`).join("")}</select>`:""}</div>
+ ${can?(assets?`<div class="fields"><label>Tag<select id="albTag-${esc(key)}">${tags.map((t,i)=>`<option ${i===(opts&&opts.tags?0:1)?"selected":""}>${esc(t)}</option>`).join("")}</select></label><label>Caption (optional)<input id="albCap-${esc(key)}"></label></div>${photoBtns(`data-alb="${esc(key)}"`,"Photos")}`:`<p class="note" style="margin:0">Photos upload in the shared app.</p>`):""}
+ ${shown.length?`<div class="thumbs">${shown.map(f=>`<span style="display:grid;gap:2px"><a href="/_blob/${esc(f.id)}" target="_blank" rel="noopener" style="display:grid;gap:2px;text-decoration:none"><img src="/_blob/${esc(f.id)}" alt="${esc(f.tag||"Photo")}" loading="lazy"><span class="note">${esc(f.tag||"")}${f.cap?": "+esc(f.cap):""}<br>${esc([f.by?pname(f.by):"",f.role?ROLE_NAME[f.role]||f.role:"",f.at?fmtDate(String(f.at).slice(0,10)):""].filter(Boolean).join(" · "))}</span></a>${can&&(canOffice()||f.by===myId())?`<button class="linkbtn" type="button" data-albrm="${esc(key)}|${esc(f.id)}">Remove</button>`:""}</span>`).join("")}</div>`:`<p class="note" style="margin:0">No photos${F?" with this tag":""} yet.</p>`}
+ ${lg.length?`<details><summary class="note">Photos from daily logs (${lg.length})</summary>${dlPhotos(lg)}</details>`:""}</div>`}
+document.addEventListener("change",async ev=>{const t=ev.target;
+ if(t.dataset.albf!==undefined){window._albF={...(window._albF||{}),[t.dataset.albf]:t.value};renderScreen();return}
+ if(!t.dataset.alb||!t.files||!t.files.length)return;if(role()==="view")return;const key=t.dataset.alb,J=jobInfo(key);if(!J)return;
+ const tag=document.getElementById("albTag-"+key)?.value||"During",cap=(document.getElementById("albCap-"+key)?.value||"").trim(),o=J.obj;let n=0;
+ await dlUpload([...t.files],p=>{o.album=[...(o.album||[]),{...p,tag,cap,by:myId(),role:role(),at:now()}];n++});t.value="";if(!n)return;
+ if(J.kind==="est"&&JOB_PHOTOS.includes(tag))o.jobPhotos={...(o.jobPhotos||{}),[tag]:true};
+ await jobSave(J);renderScreen();toast(n>1?n+" photos saved":"Photo saved")});
+document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-albrm]");if(!b)return;const [k1,k2,id]=b.dataset.albrm.split("|"),key=k1+"|"+k2,J=jobInfo(key);if(!J)return;
+ const f=(J.obj.album||[]).find(x=>x.id===id);if(!f||!(canOffice()||f.by===myId()))return;if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Tap again to remove";return}
+ J.obj.album=(J.obj.album||[]).filter(x=>x.id!==id);if(J.kind==="est")log(J.obj,"Photo removed ("+(f.tag||"")+")");await jobSave(J);renderScreen()});
 const jkLabel=k=>{if(!k)return "";if(k==="shop")return "Shop / yard";if(k==="office")return "A&H Admin & overhead";if(k==="travel")return "Travel / drive time";const J=jobInfo(k);return J?`${J.no} · ${J.title}`:"Removed job"};
 function activeJobKeys(){const out=[];ests.filter(e=>e.outcome==="Won"&&!["Paid"].includes(e.jobStage||"")).forEach(e=>out.push("est|"+e.id));wos.filter(w=>!["Paid","Invoiced"].includes(w.status)).forEach(w=>out.push("wo|"+w.id));jobs.filter(j=>!["Complete","Cancelled"].includes(j.status)).forEach(j=>out.push("job|"+j.id));return out}
 const crewOf=J=>(J&&J.obj&&J.obj.crew)||[];
@@ -3504,7 +3528,7 @@ const renderDetail=()=>renderScreen();
 function launchClock(){if(window._tcAsked)return;if(mode==="shared"&&!(window._tcLoaded&&me.ready&&teamLoaded))return;if(mode!=="shared"&&mode!=="local")return;window._tcAsked=1;if(!canField()||tcOpen(myId())||screen!=="home")return;window._tcLaunch=1;screen="time"}
 function clockChip(){const c=document.getElementById("clockChip");if(!c)return;if(!canField()||(mode==="shared"&&!window._tcLoaded)){c.hidden=true;return}const o=tcOpen(myId());c.hidden=false;
  c.className="badge clk "+(o?(onBreak(o)?"sample":"live"):"sample");c.textContent=o?`${onBreak(o)?"On break":"On the clock"} · ${jkLabel(o.job)}${o.code?" · "+o.code:""}`:"Not clocked in · tap to clock in"}
-const APP_VERSION="104",APP_DATE="Nov 10, 2026";
+const APP_VERSION="105",APP_DATE="Nov 10, 2026";
 function verStamp(){const el=document.getElementById("appVer");if(el)el.textContent=`App version ${APP_VERSION} · ${APP_DATE} · ${window._selfHost?"company server":mode==="shared"?"claude.ai":"this browser"}`}
 function renderScreen(){launchClock();verStamp();setTimeout(clockChip,0);
  applyTabs();
@@ -3613,7 +3637,7 @@ function wizardHtml(e){const S=stepsOf(e);if(!S.includes(step))step=S[0];const i
  ${custBox(e)}
  <div class="box" style="padding:12px;margin:10px 0"><strong>Home profile</strong><div class="fields"><label>Link to a home<select data-jf="homeId"><option value="">Not linked yet</option>${homes.map(h=>`<option value="${h.id}"${e.homeId===h.id?" selected":""}>${esc(homeLabel(h))}</option>`).join("")}</select></label></div><div class="actions"><button class="btn small" type="button" data-mkhome="1">Create a home profile from this visit</button>${e.homeId?`<button class="btn small" type="button" data-openhome="${e.homeId}">Open home profile</button>`:""}</div></div>
  ${sec(1,"Customer intake",im,intakeHtml(e),"Ask in conversation, not like a form. Budget and decision makers matter most.")}
- ${sec(2,"Whole-house photos",pm,jobPhotosHtml(e),"Once per job, so each trade doesn't repeat them.")}
+ ${sec(2,"Whole-house photos",pm,jobPhotosHtml(e)+albumHtml("est|"+e.id,{title:"Estimate photos",tags:JOB_PHOTOS}),"Once per job, so each trade doesn't repeat them.")}
  <section class="sec"><h3 class="sec-h"><span class="sec-n ok">·</span>Trades to bring to the visit</h3>${visitHtml(e)}</section>`}
  else if(step==="scopes"){body=`<h2>What work is on this job?</h2><p class="lede">Tap each type of work. Tap again to add a second area, for example a second bathroom. Each one gets its own measuring step.</p>${describeHtml(e)}
   <div class="box"><strong>Quick start</strong><p class="note" style="margin:4px 0 8px">Adds every trade a full remodel usually needs. Remove anything that isn't on this job, or enter 0 for it.</p><div class="actions">${Object.entries(STARTERS).map(([k,v])=>`<button type="button" class="btn primary" data-starter="${k}">+ ${esc(v.name)}</button>`).join("")}</div></div>
