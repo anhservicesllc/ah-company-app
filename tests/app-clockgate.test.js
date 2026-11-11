@@ -51,3 +51,14 @@ test('someone not on the team list is told why they cannot clock in', async () =
   assert.match(await p.textContent('body'), /You can't clock in yet/);
   await app.close();
 });
+
+test('appointments carry calendar-feed copy; schedule shows the calendar links box', async () => {
+  const app = await openApp({ role: 'office' });
+  const p = app.page;
+  const fx = await p.evaluate(async () => { const a = { id: 'AP-T1', date: ldate(), time: '10:00', kind: 'Measure', label: 'Smith kitchen', loc: '12 Main St', who: [myId()], status: 'Scheduled' }; appts.push(a); await saveItem('appts', a); return a.fx; });
+  assert.equal(fx.title, 'Smith kitchen'); assert.equal(fx.loc, '12 Main St'); assert.ok(fx.who.length >= 1); assert.ok(fx.cal);
+  await p.evaluate(() => go('schedule')); await p.waitForTimeout(300);
+  assert.match(await p.textContent('body'), /See these appointments in Google, iPhone or Outlook/);
+  assert.deepStrictEqual(app.errors, []);
+  await app.close();
+});
