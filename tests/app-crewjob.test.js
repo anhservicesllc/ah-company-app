@@ -55,3 +55,21 @@ test('punch list: each item needs a photo; photo of the fix after Mark done', as
   assert.deepStrictEqual(app.errors, []);
   await app.close();
 });
+
+test('60 photos: each saved as it uploads, survives a refresh mid-batch, all shown in See all', async () => {
+  const app = await openApp({ role: 'pm' });
+  const p = app.page;
+  await p.evaluate(() => { let n = 0; assets = { upload: async f => { await new Promise(r => setTimeout(r, 5)); n++; if (n === 20) { const i = jobs.findIndex(x => x.id === window._jid); jobs[i] = JSON.parse(JSON.stringify(jobs[i])); } return { id: 'p' + n + Math.random().toString(36).slice(2), url: '' }; } }; const j = newJob('Service work'); j.name = 'Big job'; window._jid = j.id; window._dlj = 'job|' + j.id; go('dlog'); });
+  await p.waitForTimeout(400);
+  const files = Array.from({ length: 60 }, (_, i) => ({ name: `p${i}.png`, mimeType: 'image/png', buffer: PNG }));
+  await p.setInputFiles('[data-ba] input[data-albtag="Before"][multiple]', files);
+  await p.waitForFunction(() => !window._upBusy && (jobs.find(x => x.id === window._jid).album || []).length === 60, null, { timeout: 20000 });
+  await p.waitForTimeout(300);
+  await p.click('[data-ba] [data-gal]'); await p.waitForTimeout(300);
+  assert.equal(await p.locator('#galOv img').count(), 60);
+  assert.match(await p.textContent('#galOv h2'), /\(60\)/);
+  await p.click('[data-galclose]');
+  assert.equal(await p.locator('#galOv').count(), 0);
+  assert.deepStrictEqual(app.errors, []);
+  await app.close();
+});
