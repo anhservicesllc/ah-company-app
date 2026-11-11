@@ -104,7 +104,7 @@ test('phone: the job list is tappable rows that fit the screen and open the job'
   assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390, 'no sideways scroll');
   assert.equal(await p.$eval('.jtable', e => getComputedStyle(e).display), 'none');
   await p.click('.jrow:has-text("26-100-001")'); await p.waitForTimeout(300);
-  assert.equal(await p.evaluate(() => screen + '|' + window._jbid), 'job|J-1001');
+  assert.equal(await p.evaluate(() => screen + '|' + window._dlj), 'dlog|job|J-1001');
   assert.deepEqual(app.errors, []);
   await app.close();
 });
