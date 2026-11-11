@@ -58,3 +58,17 @@ test('photos on an estimate and a job file: take or upload, tag, whole-house ite
   assert.deepStrictEqual(app.errors, []);
   await app.close();
 });
+
+test('job screen (from Money) has the photo box too', async () => {
+  const app = await openApp({ role: 'office' });
+  const p = app.page;
+  await p.evaluate(() => { assets = { upload: async f => ({ id: 'a' + Math.random().toString(36).slice(2), url: '' }) }; const j = newJob('Service work'); j.name = 'Garbage disposal'; j.noEstimate = true; window._jbid = j.id; go('job', j.id); });
+  await p.waitForTimeout(400);
+  assert.equal(await p.evaluate(() => screen), 'job');
+  assert.match(await p.textContent('[data-album]'), /Job photos/);
+  await p.setInputFiles('[data-album] input[data-alb][capture="environment"]', { name: 'a.png', mimeType: 'image/png', buffer: PNG });
+  await p.waitForTimeout(400);
+  assert.equal(await p.evaluate(() => jobInfo('job|' + window._jbid).obj.album.length), 1);
+  assert.deepStrictEqual(app.errors, []);
+  await app.close();
+});
