@@ -1320,6 +1320,21 @@ function coReqForm(){const P=window._coPh||[];
  <div class="fields"><label>Why<select id="crWhy">${["Hidden damage","Customer request","Code or inspection","Design change","Other"].map(o=>`<option>${o}</option>`).join("")}</select></label><label>Quantity or size (if known)<input id="crQty"></label></div>
  <div><span class="note">Photos</span>${photoBtns('data-crphoto="1"',"Change order")}</div>${dlPhotos(P)}
  <div class="actions"><button class="btn primary" type="button" data-crsend="1">Send to estimator</button><button class="btn" type="button" data-crcancel="1">Cancel</button></div></div>`}
+/* every photo on a job in one place: job photos, daily logs, punch list, change-order requests */
+function jobAllPhotos(key){const J=jobInfo(key);if(!J)return [];const seen=new Set(),out=[],add=(f,src,date)=>{if(!f||!f.id||seen.has(f.id))return;seen.add(f.id);out.push({...f,src,date:date||(f.at?ldateOf(new Date(f.at)):"")})};
+ (J.obj.album||[]).forEach(f=>add(f,"Job file"));
+ dlogs.filter(L=>L.job===key).forEach(L=>{(L.photos||[]).forEach(f=>add(f,"Daily log",L.date));Object.values(L.answers||{}).filter(Array.isArray).flat().forEach(f=>add(f,"Daily log",L.date))});
+ punchItems.filter(x=>x.job===key).forEach(x=>(x.photos||[]).forEach(f=>add(f,"Punch: "+x.text)));
+ coreqs.filter(r=>r.job===key).forEach(r=>(r.photos||[]).forEach(f=>add(f,"Change order request")));
+ return out}
+function galleryOpen(key){const P=jobAllPhotos(key),J=jobInfo(key);wantNames(P.map(f=>f.by).filter(Boolean));const order=["Before","During","After","Punch","Fixed"],tags=[...new Set(P.map(f=>f.tag||"Other"))].sort((a,b)=>((order.indexOf(a)+1)||99)-((order.indexOf(b)+1)||99)||a.localeCompare(b));
+ let ov=document.getElementById("galOv");if(ov)ov.remove();ov=document.createElement("div");ov.id="galOv";ov.setAttribute("role","dialog");ov.setAttribute("aria-label","All photos");
+ ov.style.cssText="position:fixed;inset:0;z-index:70;background:var(--bg,#fff);overflow:auto;padding:16px";
+ ov.innerHTML=`<div class="actions" style="justify-content:space-between;position:sticky;top:-16px;background:var(--bg,#fff);padding:8px 0;z-index:1"><h2 style="margin:0">All photos · ${esc(J?J.no:"")} <span class="note">(${P.length})</span></h2><button class="btn" type="button" data-galclose="1">Close</button></div>
+ ${P.length?tags.map(t=>{const L=P.filter(f=>(f.tag||"Other")===t).sort((a,b)=>String(a.date||"").localeCompare(String(b.date||"")));return `<h3 style="margin:16px 0 8px">${esc(t)} <span class="note">(${L.length})</span></h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">${L.map(f=>`<a href="/_blob/${esc(f.id)}" target="_blank" rel="noopener" style="display:grid;gap:2px;text-decoration:none;color:inherit"><img src="/_blob/${esc(f.id)}" alt="${esc(t)}" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line)"><span class="note">${esc([f.date?fmtDate(f.date):"",f.by?pname(f.by):"",f.src].filter(Boolean).join(" · "))}${f.cap?"<br>"+esc(f.cap):""}</span></a>`).join("")}</div>`}).join(""):`<p class="note">No photos on this job yet.</p>`}`;
+ document.body.appendChild(ov);ov.querySelector("[data-galclose]").focus()}
+document.addEventListener("click",ev=>{const b=ev.target.closest("[data-gal]");if(b){galleryOpen(b.dataset.gal);return}if(ev.target.closest("[data-galclose]")){document.getElementById("galOv")?.remove()}});
+document.addEventListener("keydown",ev=>{if(ev.key==="Escape")document.getElementById("galOv")?.remove()});
 /* crew view of a job: the work order on top, then Before and After photos. Photos taken here land in the photographer's daily report for that day; they tick which to keep and submit. */
 function woInfoHtml(J){const o=J.obj,k=J.kind,cu=custOK&&o.custId?custById(o.custId):null,hm=o.homeId?homes.find(h=>h.id===o.homeId):null,ac=k==="wo"?accounts.find(x=>x.id===o.accountId):null;
  const addr=hm?homeLabel(hm):(cu?custAddr(cu):"")||J.loc||"",sched=k==="wo"?o.scheduled:o.schedDate;
@@ -1333,7 +1348,7 @@ function woInfoHtml(J){const o=J.obj,k=J.kind,cu=custOK&&o.custId?custById(o.cus
  ${!scope&&!notes&&canOffice()?`<p class="note" style="margin:0">Add the scope and notes on the job's ${k==="wo"?"work order":k==="job"?"Contract &amp; invoices screen":"estimate"} so the crew sees them here.</p>`:""}</div>`}
 function baHtml(J){const A=J.obj.album||[],can=role()!=="view";wantNames(A.map(f=>f.by).filter(Boolean));
  const side=t=>{const P=A.filter(f=>f.tag===t);return `<div class="stack" style="gap:6px"><h4 style="margin:0">${t} <span class="note">(${P.length})</span></h4>${can?(assets?photoBtns(`data-alb="${esc(J.key)}" data-albtag="${t}"`,t+" photos"):`<p class="note" style="margin:0">Photos upload in the shared app.</p>`):""}${P.length?`<div class="thumbs">${P.map(f=>`<a href="/_blob/${esc(f.id)}" target="_blank" rel="noopener" style="display:grid;gap:2px;text-decoration:none"><img src="/_blob/${esc(f.id)}" alt="${esc(t)}" loading="lazy"><span class="note">${esc([f.by?pname(f.by):"",f.at?fmtDate(ldateOf(new Date(f.at))):""].filter(Boolean).join(" · "))}${f.dl?" · in report":""}</span></a>`).join("")}</div>`:`<p class="note" style="margin:0">No ${t.toLowerCase()} photos yet.</p>`}</div>`};
- return `<div class="box stack" style="margin-bottom:12px" data-ba="1"><h3 style="margin:0">Before &amp; after photos</h3><p class="note" style="margin:0">Take before photos when you arrive and after photos when you finish. They show up in your daily report for that day, where you pick which ones to keep.</p><div class="fields" style="align-items:start">${side("Before")}${side("After")}</div></div>`}
+ return `<div class="box stack" style="margin-bottom:12px" data-ba="1"><div class="actions" style="justify-content:space-between"><h3 style="margin:0">Before &amp; after photos</h3><button class="btn small" type="button" data-gal="${esc(J.key)}">See all job photos (${jobAllPhotos(J.key).length})</button></div><p class="note" style="margin:0">Take before photos when you arrive and after photos when you finish. They show up in your daily report for that day, where you pick which ones to keep.</p><div class="fields" style="align-items:start">${side("Before")}${side("After")}</div></div>`}
 /* photos from the job file waiting in this person's report for this day */
 function dlBaPend(L){const J=jobInfo(L.job);if(!J)return [];return (J.obj.album||[]).filter(f=>(f.tag==="Before"||f.tag==="After")&&f.by===L.by&&!f.dl&&f.at&&ldateOf(new Date(f.at))===L.date)}
 function dlBaHtml(L,ed){const P=dlBaPend(L),skip=L.baSkip||[];if(!ed||!P.length)return "";
@@ -1421,7 +1436,14 @@ function bbResult(r,J){const P=r.parsed;if(!P||!P.rows.length)return `<p class="
  <p style="margin:0"><strong>${list.length}</strong> clock-in day${list.length===1?"":"s"} · <strong>${ok}</strong> with a submitted log · <strong class="${list.length-ok?"missingNote":""}">${list.length-ok}</strong> missing</p>
  <div class="tablewrap"><table><thead><tr><th>Date</th><th>Person</th><th class="num">Hours</th><th>Cost codes</th><th>Daily log</th></tr></thead><tbody>${list.map(x=>`<tr><td>${esc(fmtDate(x.date))}</td><td>${esc(x.who)}${x.m?"":'<br><span class="note">Not matched to the team. Set their BusyBusy name in Team and roles.</span>'}</td><td class="num">${x.hrs.toFixed(2)}</td><td>${esc([...x.codes].join(", "))}</td><td>${x.lg?(x.lg.submitted?'<span class="pill green">Filed</span>':'<span class="pill amber">Started, not submitted</span>'):'<span class="pill red">Missing</span>'}</td></tr>`).join("")}</tbody></table></div>
  ${extra.length?`<p class="note" style="margin:0">${extra.length} log entr${extra.length===1?"y has":"ies have"} no matching BusyBusy time: ${esc(extra.map(l=>fmtDate(l.date)+" "+pname(l.by)).join("; "))}.</p>`:""}`}
-async function dlUpload(files,onDone){if(!assets){toast("Photos upload in the shared app.");return}for(const f of files){try{const r=await assets.upload(f);onDone({id:r.id,name:f.name,at:now()})}catch(x){toast("A photo didn't upload. Check the connection and try again.");}}}
+/* uploads one file at a time and saves the record after each one, so a long batch keeps what it has done if the
+   app is closed or the connection drops; a bar shows progress and the end says how many saved */
+function upMsg(t){let b=document.getElementById("upBar");if(!t){if(b)b.remove();return}if(!b){b=document.createElement("div");b.id="upBar";b.setAttribute("role","status");b.style.cssText="position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:999px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.25);max-width:calc(100vw - 32px)";document.body.appendChild(b)}b.textContent=t}
+window.addEventListener("beforeunload",ev=>{if(window._upBusy){ev.preventDefault();ev.returnValue=""}});
+async function dlUpload(files,onDone,save){if(!assets){toast("Photos upload in the shared app.");return 0}const N=files.length;let ok=0,bad=0;window._upBusy=(window._upBusy||0)+1;
+ try{for(let i=0;i<N;i++){const f=files[i];if(N>1)upMsg(`Uploading ${i+1} of ${N}… keep the app open`);try{const r=await assets.upload(f);await onDone({id:r.id,name:f.name,at:now()});if(save)await save();ok++}catch(x){bad++}}}
+ finally{window._upBusy--;if(!window._upBusy)upMsg("")}
+ if(bad)toast(`${ok} saved, ${bad} didn't upload. Check the connection and add those again.`);else if(N>1)toast(`All ${ok} saved`);return ok}
 let dlT=null;const dlQueue=L=>{clearTimeout(dlT);dlT=setTimeout(()=>saveItem("dlogs",L),600)};
 const dlCur=()=>dlogs.find(x=>x.id===window._dlid);
 const dlRefreshRow=L=>{const r=document.getElementById("dlSubmitRow");if(r)r.innerHTML=dlSubmitRow(L)};
@@ -1462,12 +1484,12 @@ document.addEventListener("change",async ev=>{const t=ev.target;
  if(t.dataset.crphoto&&t.files){const desc=$("#crDesc")?.value||"",why=$("#crWhy")?.value,qty=$("#crQty")?.value||"";await dlUpload([...t.files],p=>{window._coPh=[...(window._coPh||[]),{...p,tag:"Change order"}]});renderScreen();if($("#crDesc")){$("#crDesc").value=desc;$("#crWhy").value=why;$("#crQty").value=qty}return}
  if(screen==="dlog1"&&t.dataset.dlbak){const L=dlCur();if(!L||!dlCanEdit(L))return;const id=t.dataset.dlbak;L.baSkip=t.checked?(L.baSkip||[]).filter(x=>x!==id):[...new Set([...(L.baSkip||[]),id])];await saveItem("dlogs",L);return}
  if(screen!=="dlog1")return;
- if(role()!=="view"&&t.dataset.dllate&&t.files){const L=dlCur();if(!L)return;const cap=($("#dlLateCap")?.value||"").trim();await dlUpload([...t.files],p=>{L.photos=[...(L.photos||[]),{...p,tag:"Added later",cap,by:myId(),role:role(),late:1}]});t.value="";await saveItem("dlogs",L);renderScreen();toast("Photos added");return}
+ if(role()!=="view"&&t.dataset.dllate&&t.files){const L=dlCur();if(!L)return;const cap=($("#dlLateCap")?.value||"").trim();const cur=()=>dlogs.find(x=>x.id===L.id)||L;await dlUpload([...t.files],p=>{const L2=cur();L2.photos=[...(L2.photos||[]),{...p,tag:"Added later",cap,by:myId(),role:role(),late:1}]},()=>saveItem("dlogs",cur()));t.value="";renderScreen();return}
  const L=dlCur();if(!L||!dlCanEdit(L))return;
  if(t.dataset.dlcode){const S=new Set(L.codes||[]);t.checked?S.add(t.dataset.dlcode):S.delete(t.dataset.dlcode);L.codes=[...S]}
  else if(t.dataset.dlprog){L.progress={...(L.progress||{}),[t.dataset.dlprog]:t.value}}
- else if(t.dataset.dlphoto&&t.files){const tag=$("#dlTag").value,cap=$("#dlCap").value.trim();await dlUpload([...t.files],p=>{L.photos=[...(L.photos||[]),{...p,tag,cap,by:myId(),role:role()}]});t.value="";await saveItem("dlogs",L);renderScreen();toast("Photos saved");return}
- else if(t.dataset.dlqphoto&&t.files){const q=t.dataset.dlqphoto;await dlUpload([...t.files],p=>{L.answers={...(L.answers||{}),[q]:[...((L.answers||{})[q]||[]),{...p,tag:q,by:myId(),role:role()}]}});await saveItem("dlogs",L);renderScreen();return}
+ else if(t.dataset.dlphoto&&t.files){const tag=$("#dlTag").value,cap=$("#dlCap").value.trim();const cur=()=>dlogs.find(x=>x.id===L.id)||L;await dlUpload([...t.files],p=>{const L2=cur();L2.photos=[...(L2.photos||[]),{...p,tag,cap,by:myId(),role:role()}]},()=>saveItem("dlogs",cur()));t.value="";renderScreen();return}
+ else if(t.dataset.dlqphoto&&t.files){const q=t.dataset.dlqphoto;const cur=()=>dlogs.find(x=>x.id===L.id)||L;await dlUpload([...t.files],p=>{const L2=cur();L2.answers={...(L2.answers||{}),[q]:[...((L2.answers||{})[q]||[]),{...p,tag:q,by:myId(),role:role()}]}},()=>saveItem("dlogs",cur()));renderScreen();return}
  else if(t.dataset.dlw==="desc"||t.dataset.dlq||t.dataset.dlf){t.classList.toggle("missing",t.value==="")}
  clearTimeout(dlT);await saveItem("dlogs",L);dlRefreshRow(L)});
 
@@ -1648,7 +1670,7 @@ const ALB_TAGS=["Before","During","After","Issue","Measure","Materials","Other"]
 function albumHtml(key,opts){const J=jobInfo(key);if(!J)return "";const o=J.obj,A=o.album||[],tags=[...((opts&&opts.tags)||[]),...ALB_TAGS],can=role()!=="view";
  const F=window._albF&&window._albF[key]||"",shown=F?A.filter(f=>f.tag===F):A,used=[...new Set(A.map(f=>f.tag))];wantNames(A.map(f=>f.by).filter(Boolean));
  const lg=(opts&&opts.logs)?dlogs.filter(L=>L.job===key).flatMap(L=>[...(L.photos||[]),...Object.values(L.answers||{}).filter(Array.isArray).flat()].map(f=>({...f,date:L.date}))):[];
- return `<div class="box stack" style="margin-top:12px" data-album="${esc(key)}"><div class="actions" style="justify-content:space-between"><h3 style="margin:0">${esc((opts&&opts.title)||"Photos")} <span class="note">(${A.length})</span></h3>${used.length>1?`<select aria-label="Show photos tagged" data-albf="${esc(key)}"><option value="">All tags</option>${used.map(t=>`<option ${F===t?"selected":""}>${esc(t)}</option>`).join("")}</select>`:""}</div>
+ return `<div class="box stack" style="margin-top:12px" data-album="${esc(key)}"><div class="actions" style="justify-content:space-between"><h3 style="margin:0">${esc((opts&&opts.title)||"Photos")} <span class="note">(${A.length})</span></h3><button class="btn small" type="button" data-gal="${esc(key)}">See all (${jobAllPhotos(key).length})</button>${used.length>1?`<select aria-label="Show photos tagged" data-albf="${esc(key)}"><option value="">All tags</option>${used.map(t=>`<option ${F===t?"selected":""}>${esc(t)}</option>`).join("")}</select>`:""}</div>
  ${can?(assets?`<div class="fields"><label>Tag<select id="albTag-${esc(key)}">${tags.map((t,i)=>`<option ${i===(opts&&opts.tags?0:1)?"selected":""}>${esc(t)}</option>`).join("")}</select></label><label>Caption (optional)<input id="albCap-${esc(key)}"></label></div>${photoBtns(`data-alb="${esc(key)}"`,"Photos")}`:`<p class="note" style="margin:0">Photos upload in the shared app.</p>`):""}
  ${shown.length?`<div class="thumbs">${shown.map(f=>`<span style="display:grid;gap:2px"><a href="/_blob/${esc(f.id)}" target="_blank" rel="noopener" style="display:grid;gap:2px;text-decoration:none"><img src="/_blob/${esc(f.id)}" alt="${esc(f.tag||"Photo")}" loading="lazy"><span class="note">${esc(f.tag||"")}${f.cap?": "+esc(f.cap):""}<br>${esc([f.by?pname(f.by):"",f.role?ROLE_NAME[f.role]||f.role:"",f.at?fmtDate(String(f.at).slice(0,10)):""].filter(Boolean).join(" · "))}</span></a>${can&&(canOffice()||f.by===myId())?`<button class="linkbtn" type="button" data-albrm="${esc(key)}|${esc(f.id)}">Remove</button>`:""}</span>`).join("")}</div>`:`<p class="note" style="margin:0">No photos${F?" with this tag":""} yet.</p>`}
  ${lg.length?`<details><summary class="note">Photos from daily logs (${lg.length})</summary>${dlPhotos(lg)}</details>`:""}</div>`}
@@ -1656,9 +1678,8 @@ document.addEventListener("change",async ev=>{const t=ev.target;
  if(t.dataset.albf!==undefined){window._albF={...(window._albF||{}),[t.dataset.albf]:t.value};renderScreen();return}
  if(!t.dataset.alb||!t.files||!t.files.length)return;if(role()==="view")return;const key=t.dataset.alb,J=jobInfo(key);if(!J)return;
  const tag=t.dataset.albtag||document.getElementById("albTag-"+key)?.value||"During",cap=(document.getElementById("albCap-"+key)?.value||"").trim(),o=J.obj;let n=0;
- await dlUpload([...t.files],p=>{o.album=[...(o.album||[]),{...p,tag,cap,by:myId(),role:role(),at:now()}];n++});t.value="";if(!n)return;
- if(J.kind==="est"&&JOB_PHOTOS.includes(tag))o.jobPhotos={...(o.jobPhotos||{}),[tag]:true};
- await jobSave(J);renderScreen();toast(n>1?n+" photos saved":"Photo saved")});
+ const cur=()=>jobInfo(key)||J;await dlUpload([...t.files],p=>{const o2=cur().obj;o2.album=[...(o2.album||[]),{...p,tag,cap,by:myId(),role:role(),at:now()}];if(J.kind==="est"&&JOB_PHOTOS.includes(tag))o2.jobPhotos={...(o2.jobPhotos||{}),[tag]:true};n++},()=>jobSave(cur()));t.value="";if(!n)return;
+ renderScreen();if(n===1)toast("Photo saved")});
 document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-albrm]");if(!b)return;const [k1,k2,id]=b.dataset.albrm.split("|"),key=k1+"|"+k2,J=jobInfo(key);if(!J)return;
  const f=(J.obj.album||[]).find(x=>x.id===id);if(!f||!(canOffice()||f.by===myId()))return;if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Tap again to remove";return}
  J.obj.album=(J.obj.album||[]).filter(x=>x.id!==id);if(J.kind==="est")log(J.obj,"Photo removed ("+(f.tag||"")+")");await jobSave(J);renderScreen()});
@@ -1934,7 +1955,7 @@ document.addEventListener("change",async ev=>{const t=ev.target;
  if(t.dataset.wst){const w=wcalls.find(x=>x.id===t.dataset.wst);if(!w)return;w.status=t.value;w.hist=[...(w.hist||[]),{at:now(),by:myId(),t:t.value}];await saveItem("warranty",w);renderScreen();return}
  if(t.dataset.wfix){const w=wcalls.find(x=>x.id===t.dataset.wfix);if(!w)return;w.fix=t.value.trim();await saveItem("warranty",w);return}
  if(t.dataset.ppnew&&t.files){const d={t:$("#pText")?.value||"",a:$("#pArea")?.value||""};await dlUpload([...t.files],ph=>{window._pPh=[...(window._pPh||[]),{...ph,tag:"Punch",by:myId(),role:role(),at:now()}]});t.value="";window._pErr="";window._pDraft=d;renderScreen();return}
-if(t.dataset.pphoto&&t.files){const p=punchItems.find(x=>x.id===t.dataset.pphoto);if(!p)return;const tag=t.dataset.pfix?"Fixed":"Punch";await dlUpload([...t.files],ph=>{p.photos=[...(p.photos||[]),{...ph,tag,by:myId(),role:role(),at:now()}]});t.value="";await saveItem("punch",p);renderScreen();return}
+if(t.dataset.pphoto&&t.files){const p=punchItems.find(x=>x.id===t.dataset.pphoto);if(!p)return;const tag=t.dataset.pfix?"Fixed":"Punch";const cur=()=>punchItems.find(x=>x.id===p.id)||p;await dlUpload([...t.files],ph=>{const p2=cur();p2.photos=[...(p2.photos||[]),{...ph,tag,by:myId(),role:role(),at:now()}]},()=>saveItem("punch",cur()));t.value="";renderScreen();return}
  if(t.dataset.jcrewid!==undefined||t.dataset.jstaff||t.dataset.jslead!==undefined){const J=screen==="dlog"?jobInfo(window._dlj):screen==="job"?jobInfo("job|"+window._jbid):null;if(!J||!canOffice())return;const o=J.obj;
   if(t.dataset.jcrewid!==undefined)jobSetCrew(o,t.value);
   else if(t.dataset.jstaff){const S=new Set(o.staffIds||[]);t.checked?S.add(t.dataset.jstaff):S.delete(t.dataset.jstaff);o.staffIds=[...S];jobStaffSync(o)}
@@ -3553,7 +3574,7 @@ const renderDetail=()=>renderScreen();
 function launchClock(){if(window._tcAsked)return;if(mode==="shared"&&!(window._tcLoaded&&me.ready&&teamLoaded))return;if(mode!=="shared"&&mode!=="local")return;window._tcAsked=1;if(!canField()||tcOpen(myId())||screen!=="home")return;window._tcLaunch=1;screen="time"}
 function clockChip(){const c=document.getElementById("clockChip");if(!c)return;if(!canField()||(mode==="shared"&&!window._tcLoaded)){c.hidden=true;return}const o=tcOpen(myId());c.hidden=false;
  c.className="badge clk "+(o?(onBreak(o)?"sample":"live"):"sample");c.textContent=o?`${onBreak(o)?"On break":"On the clock"} · ${jkLabel(o.job)}${o.code?" · "+o.code:""}`:"Not clocked in · tap to clock in"}
-const APP_VERSION="108",APP_DATE="Nov 10, 2026";
+const APP_VERSION="109",APP_DATE="Nov 10, 2026";
 function verStamp(){const el=document.getElementById("appVer");if(el)el.textContent=`App version ${APP_VERSION} · ${APP_DATE} · ${window._selfHost?"company server":mode==="shared"?"claude.ai":"this browser"}`}
 function renderScreen(){launchClock();verStamp();setTimeout(clockChip,0);
  applyTabs();

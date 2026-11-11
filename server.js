@@ -251,10 +251,16 @@ function gdLabel(col, did, d) {
   return safeName([did, d.job || d.jobNo || d.label || ''].filter(Boolean).join(' - '));
 }
 function gdPlaces() {
-  const map = {};
+  const map = {}, parents = {};
+  /* job-level records first, so photos from a job's daily logs, punch list, change orders, orders and warranty
+     calls land in a subfolder of that job's folder instead of folders of their own */
+  const PCOL = { est: 'estimates', job: 'jobs', wo: 'wos' };
+  for (const col of ['estimates', 'jobs', 'wos']) for (const x of listCol([col])) parents[col + '/' + x.id] = { kind: GD_KINDS[col], key: col + '/' + x.id, label: gdLabel(col, x.id, x.data || {}) };
   for (const col of Object.keys(GD_KINDS)) for (const x of listCol([col])) {
-    const hits = (JSON.stringify(x.data || {}).match(/"id":"[a-f0-9]{32}"/g) || []).map(h => h.slice(6, -1));
-    for (const b of hits) if (!map[b]) map[b] = { kind: GD_KINDS[col], key: col + '/' + x.id, label: gdLabel(col, x.id, x.data || {}) };
+    const d = x.data || {}, hits = (JSON.stringify(d).match(/"id":"[a-f0-9]{32}"/g) || []).map(h => h.slice(6, -1));
+    const [jk, jid] = String(d.job || '').split('|'), par = PCOL[jk] && parents[PCOL[jk] + '/' + jid];
+    const place = par && !['homes', 'estimates', 'jobs', 'wos'].includes(col) ? { ...par, sub: GD_KINDS[col] } : { kind: GD_KINDS[col], key: col + '/' + x.id, label: gdLabel(col, x.id, d) };
+    for (const b of hits) if (!map[b]) map[b] = place;
   }
   return map;
 }
@@ -274,6 +280,7 @@ async function gdSync(who, max) {
       const kf = 'kind:' + pl.kind; if (!st.folders[kf]) st.folders[kf] = await gdFolder(pl.kind, c.rootId);
       let parent = st.folders[kf];
       if (pl.label) { if (!st.folders[pl.key]) st.folders[pl.key] = await gdFolder(pl.label, parent); parent = st.folders[pl.key]; }
+      if (pl.sub) { const sk = pl.key + '#' + pl.sub; if (!st.folders[sk]) st.folders[sk] = await gdFolder(pl.sub, parent); parent = st.folders[sk]; }
       const buf = fs.readFileSync(path.join(BLOBS, b + (IMG_TYPES[meta.type] || '')));
       const name = `${(meta.at || '').slice(0, 10)} ${b.slice(0, 8)}${IMG_TYPES[meta.type] || ''}`;
       st.files[b] = { drive: await gdUpload(name, meta.type, buf, parent), at: new Date().toISOString(), folder: pl.key };
@@ -290,7 +297,7 @@ const gdBox = u => { const c = gdConf(), st = readJSON(GD_SYNC_F, {}), n = Objec
   const total = (() => { try { return fs.readdirSync(BLOBS).filter(f => f.endsWith('.meta.json')).length; } catch (e) { return 0; } })();
   return `<div class="box"><h2 style="font-size:1.05rem;margin-top:0">Photos to Google Drive</h2>
 <p class="note">Status: ${gdOn() ? `<strong>connected</strong> · ${n} of ${total} photos copied${st.lastRun ? ' · last run ' + esc(new Date(st.lastRun).toLocaleString('en-US', { timeZone: 'America/Denver' })) : ''}` : (c.clientId ? 'client saved, not connected yet' : 'off')}${st.lastErr ? ` · <span class="err">${esc(st.lastErr)}</span>` : ''}</p>
-<p class="note">Every photo is copied into a Drive folder called "A&amp;H App Photos", one subfolder per home, job or work order, every 10 minutes. The server can only see what it put there.</p>
+<p class="note">Every photo is copied into a Drive folder called "A&amp;H App Photos", one subfolder per home, job or work order, every 10 minutes. Photos from a job's daily logs, punch list, change orders, orders and warranty calls go in subfolders of that job's folder. Photos not attached to anything after an hour go to "Unfiled". The server can only see what it put there.</p>
 ${u.owner ? `<form method="post" action="admin/google"><label>Client ID<input name="clientId" value="${esc(c.clientId || '')}" autocomplete="off"></label><label>Client secret${c.clientSecret ? ' (saved; leave blank to keep)' : ''}<input name="clientSecret" type="password" autocomplete="new-password"></label><button>Save</button></form>
 ${c.clientId && c.clientSecret ? `<p style="margin-bottom:0"><a href="admin/google/start"><button type="button">${gdOn() ? 'Reconnect' : 'Connect'} Google Drive</button></a> ${gdOn() ? `<form method="post" action="admin/google/sync" style="display:inline"><button class="ghost">Copy now</button></form> <form method="post" action="admin/google/off" style="display:inline"><button class="ghost">Disconnect</button></form>` : ''}</p>` : ''}
 <p class="note">Redirect address to register in Google Cloud: <code>${esc((process.env.AH_PUBLIC_URL || 'https://app.anhservicesllc.com') + '/admin/google/callback')}</code></p>` : '<p class="note">The owner sets this up.</p>'}</div>`; };

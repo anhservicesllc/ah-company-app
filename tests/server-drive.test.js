@@ -16,7 +16,7 @@ function fakeGoogle() {
     if (u.pathname === '/token') { const f = Object.fromEntries(new URLSearchParams(body.toString())); G.tokens.push(f.grant_type);
       return f.grant_type === 'authorization_code' ? j(200, { access_token: 'at1', refresh_token: 'rt1', expires_in: 3600 }) : j(200, { access_token: 'at2', expires_in: 3600 }); }
     if (req.headers.authorization !== 'Bearer at1' && req.headers.authorization !== 'Bearer at2' && !u.pathname.startsWith('/session/')) return j(401, { error: 'no' });
-    if (u.pathname === '/drive/v3/files' && req.method === 'POST') { const m = JSON.parse(body.toString()); G.folders.push({ name: m.name, parents: m.parents || [] }); return j(200, { id: 'F' + (++n) }); }
+    if (u.pathname === '/drive/v3/files' && req.method === 'POST') { const m = JSON.parse(body.toString()); const fid = 'F' + (++n); G.folders.push({ name: m.name, parents: m.parents || [], id: fid }); return j(200, { id: fid }); }
     if (u.pathname === '/upload/drive/v3/files') { const m = JSON.parse(body.toString()); const sid = ++n; G.uploads.push({ name: m.name, parents: m.parents, sid }); res.writeHead(200, { location: gBase + '/session/' + sid }); return res.end(); }
     if (u.pathname.startsWith('/session/')) { const up = G.uploads.find(x => 'D' + x.sid === 'D' + u.pathname.split('/').pop()); up.bytes = body.length; up.type = req.headers['content-type']; return j(200, { id: 'D' + up.sid }); }
     j(404, {}); }); }).listen(0, () => { gBase = 'http://127.0.0.1:' + g.address().port; ok(); }); });
@@ -63,6 +63,20 @@ test('owner connects Google Drive and photos are copied into a folder per home',
   assert.deepEqual(G.uploads[0].parents, ['F3'], 'inside the home folder');
   r = await form('/admin/google/sync', {}); assert.match(msg(r), /Copied 0 photos/, 'never copied twice');
   const page = await (await go('/admin')).text(); assert.match(page, /1 of 1 photos copied/); assert.doesNotMatch(page, /secret-1/, 'secret never shown');
+});
+
+test('daily log photos go in a subfolder of their job\'s folder', async () => {
+  const png = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d6a4b70000000049454e44ae426082', 'hex');
+  const up = await (await go('/api/upload', { method: 'POST', headers: { 'content-type': 'image/png' }, body: png })).json();
+  await go('/api/doc?path=jobs/JB-1001', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jobNo: '26-100-023', name: 'Garbage disposal' }) });
+  await go('/api/doc?path=dlogs/L-1', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ job: 'job|JB-1001', date: '2026-11-11', photos: [{ id: up.id, url: up.url, tag: 'Before' }] }) });
+  const before = G.folders.length;
+  const r = await form('/admin/google/sync', {}); assert.match(msg(r), /Copied|already running/);
+  await new Promise(r => setTimeout(r, 300));
+  assert.deepEqual(G.folders.slice(before).map(f => f.name), ['Estimates and jobs', '26-100-023 - Garbage disposal', 'Daily logs']);
+  const F = G.folders.slice(before), last = G.uploads[G.uploads.length - 1];
+  assert.deepEqual(F[2].parents, [F[1].id], 'Daily logs folder sits inside the job folder');
+  assert.deepEqual(last.parents, [F[2].id], 'inside the job folder\'s Daily logs subfolder');
 });
 
 test('only the owner can connect Drive', async () => {
