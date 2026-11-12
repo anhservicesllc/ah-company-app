@@ -6,7 +6,7 @@ const { openApp, closeBrowser } = require('./lib/harness');
 after(closeBrowser);
 
 async function clockInOn(p) {
-  await p.evaluate(() => { const j = newJob('Service work'); j.name = 'Garbage disposal'; window._jk = 'job|' + j.id; const t = { id: newId('T'), by: myId(), role: role(), job: window._jk, code: '010', note: '', in: new Date(Date.now() - 3 * 3600e3).toISOString(), out: null, breaks: [], status: 'open', edits: [] }; tclock.push(t); go('time'); });
+  await p.evaluate(() => { const j = newJob('Service work'); j.name = 'Garbage disposal'; window._jk = 'job|' + j.id; const t = { id: newId('T'), by: myId(), role: role(), job: window._jk, code: '010', note: '', in: new Date(Math.max(Date.now() - 3 * 3600e3, new Date(new Date().setHours(0, 1, 0, 0)).getTime())).toISOString() /* stay on today, even just after midnight */, out: null, breaks: [], status: 'open', edits: [] }; tclock.push(t); go('time'); });
   await p.waitForTimeout(300);
 }
 
