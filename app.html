@@ -1516,7 +1516,22 @@ async function dlUpload(files,onDone,save){if(!assets){toast("Photos upload in t
  try{for(let i=0;i<N;i++){const f=files[i];if(N>1)upMsg(`Uploading ${i+1} of ${N}… keep the app open`);try{const r=await assets.upload(f);await onDone({id:r.id,name:f.name,at:now()});if(save)await save();ok++}catch(x){bad++}}}
  finally{window._upBusy--;if(!window._upBusy)upMsg("")}
  if(bad)toast(`${ok} saved, ${bad} didn't upload. Check the connection and add those again.`);else if(N>1)toast(`All ${ok} saved`);return ok}
-let dlT=null;const dlQueue=L=>{clearTimeout(dlT);dlT=setTimeout(()=>saveItem("dlogs",L),600)};
+let dlT=null,dlTL=null;const dlQueue=L=>{clearTimeout(dlT);dlTL=L;dlT=setTimeout(()=>{dlT=null;saveItem("dlogs",L)},600)};
+/* Tablets and phones often close the page while the camera is open. Before the camera opens: save what's typed and remember where we were, so the app comes back to the same screen. */
+const RESUME_KEY="ah-resume",RESUME_W=["_dlid","_dlj","_jbid","_dlcoOpen"];
+function markResume(){if(dlT){clearTimeout(dlT);dlT=null;if(dlTL)saveItem("dlogs",dlTL)}
+ try{const w={};RESUME_W.forEach(k=>{if(window[k]!==undefined&&window[k]!==null)w[k]=window[k]});localStorage.setItem(RESUME_KEY,JSON.stringify({scr:screen,openId,step,w,at:Date.now()}))}catch(x){}}
+function clearResume(){try{localStorage.removeItem(RESUME_KEY)}catch(x){}}
+document.addEventListener("click",ev=>{const t=ev.target;const inp=t.matches?.("input[type=file]")?t:t.closest?.("label")?.querySelector("input[type=file]");if(inp)markResume()},true);
+document.addEventListener("change",ev=>{if(ev.target.matches?.("input[type=file]"))setTimeout(clearResume,0)},true);
+document.addEventListener("cancel",ev=>{if(ev.target.matches?.("input[type=file]"))clearResume()},true);
+window.addEventListener("focus",()=>setTimeout(()=>{if(!window._upBusy)clearResume()},120000));
+function tryResume(){let R=null;try{R=JSON.parse(localStorage.getItem(RESUME_KEY)||"null")}catch(x){}clearResume();
+ if(!R||!R.scr||R.scr==="home"||Date.now()-(R.at||0)>30*60e3)return;
+ Object.assign(window,R.w||{});let n=0;
+ const back=()=>{if(R.scr==="dlog1"&&!dlogs.some(x=>x.id===R.w._dlid)&&n++<20){setTimeout(back,400);return}
+  go(R.scr,R.openId===null?undefined:R.openId,R.step);toast("The camera closed the app, so you're back where you were. What you typed is saved. Take the photo again, or use Upload photos.")};
+ setTimeout(back,600)}
 const dlCur=()=>dlogs.find(x=>x.id===window._dlid);
 const dlRefreshRow=L=>{const r=document.getElementById("dlSubmitRow");if(r)r.innerHTML=dlSubmitRow(L)};
 document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-coreqprice],[data-coreqno]");if(!b)return;
@@ -1888,7 +1903,7 @@ function empTimeHtml(){const ws=window._twk||weekStart(ldate()),we=addDays(ws,6)
   ${false&&mode==="shared"&&team.length?`<label style="max-width:360px">App sign-in<select data-stf="${esc(x.id)}|uid"><option value="">Not linked</option>${team.map(m=>`<option value="${esc(m.id)}"${x.uid===m.id?" selected":""}>${esc(pname(m.id))}</option>`).join("")}</select></label>`:""}</div>
   ${wk}
   <div class="box stack"><div class="actions" style="justify-content:space-between"><h3 style="margin:0">Time card</h3><span class="pill ${E.st==="Approved"?"green":E.st==="Submitted"?"amber":""}">${E.st}</span></div>
-  ${!x.uid?`<p class="note" style="margin:0">Not linked to an app sign-in yet, so there's no time to show. Pick their sign-in above once they have one.</p>`:E.L.length?`<div class="jlist" style="display:grid">${E.L.map(t=>`<div class="jrow" style="cursor:default"><span class="c"><span class="h"><strong>${esc(dayName(tDay(t)))}</strong><span class="note" style="margin:0">${esc(tTime(t.in))} – ${esc(t.out?tTime(t.out):"still on")}</span></span><span class="t" style="font-size:.95rem">${esc(jkLabel(t.job))}</span><span class="m">${esc([t.code,t.note].filter(Boolean).join(" · "))}${tcFlags(t).length?` · <strong>${esc(tcFlags(t).join("; "))}</strong>`:""}</span></span><span class="mono">${(tcMins(t)/60).toFixed(2)} h</span></div>`).join("")}</div>`:`<p class="note" style="margin:0">No time this week.</p>`}
+  ${!x.uid?`<p class="note" style="margin:0">Not linked to an app sign-in yet, so there's no time to show. Pick their sign-in above once they have one.</p>`:E.L.length?`<div class="jlist" style="display:grid">${E.L.map(t=>`<div class="jrow" style="cursor:default"><span class="c"><span class="h"><strong>${esc(dayName(tDay(t)))}</strong><span class="note" style="margin:0">${esc(tTime(t.in))} – ${esc(t.out?tTime(t.out):"still on")}</span></span><span class="t" style="font-size:.95rem">${esc(jkLabel(t.job))}</span><span class="m">${esc([t.code,t.note].filter(Boolean).join(" · "))}${tcFlags(t).length?` · <strong>${esc(tcFlags(t).join("; "))}</strong>`:""}</span></span><span class="mono">${(tcMins(t)/60).toFixed(2)} h</span>${canOffice()?`<button class="btn small" type="button" data-tcedit="${esc(t.id)}" style="margin-left:8px">Fix</button>`:""}</div>`).join("")}</div>${window._tcEdit&&E.L.some(t=>t.id===window._tcEdit.id)?tcEditForm(window._tcEdit):""}`:`<p class="note" style="margin:0">No time this week.</p>`}
   <p style="margin:0"><strong>${(E.C.total/60).toFixed(2)} h</strong> · regular ${(E.C.reg/60).toFixed(2)} · overtime ${(E.C.ot/60).toFixed(2)}</p>
   ${E.st==="Submitted"&&x.uid?`<div class="actions"><button class="btn good" type="button" data-tcapprove="${esc(x.uid)}|${esc(ws)}">Approve this week</button></div>`:""}</div>
   <div class="box stack" style="margin-top:12px"><h3 style="margin:0">Last 4 weeks</h3>${[0,1,2,3].map(n=>{const a=addDays(ws,-7*n),E2=empWeek(x.uid,a,addDays(a,6));return `<div class="actions" style="justify-content:space-between"><span>${esc(fmtDate(a))}</span><span>${(E2.C.total/60).toFixed(2)} h · ${E2.st}</span></div>`}).join("")}</div>`}
@@ -1949,7 +1964,13 @@ function logAskHtml(uid){const L=(window._tcLogAsk||[]).filter(k=>needLogs(uid,[
  <p class="note" style="margin:0">${L.length>1?"Each job gets its own log, and office time gets one office report.":"It only takes a minute while it's fresh."}</p>
  ${L.map(k=>k==="office"?(window._offRep?offRepForm():`<div class="actions" style="justify-content:space-between"><span>Daily office report <span class="note">(admin and overhead time)</span></span><button class="btn small primary" type="button" data-offrep="1">Yes, do it now</button></div>`):`<div class="actions" style="justify-content:space-between"><span>${esc(jkLabel(k))}</span><button class="btn small primary" type="button" data-dlog="${esc(k)}">Yes, do it now</button></div>`).join("")}
  <div class="actions"><button class="btn small" type="button" data-logask-later="1">Later${window._tcLogAskLater?"":" (I'll remind you at the end of the day)"}</button></div></div>`}
-function tcEditForm(x){return `<div class="box stack" style="background:var(--bg)"><strong>${x.isNew?"Add time":"Fix time"}</strong><div class="fields"><label>Job<select id="teJob">${tcJobOptions(x.job,x.by)}</select></label><label>Cost code${codeField("teCode",x.code)}</label><label>Role<select id="teRole"><option value="">(none)</option>${ALL_ROLES.map(r=>`<option value="${r}" ${(x.isNew?(x.role||role()):x.role)===r?"selected":""}>${esc(ROLE_NAME[r])}</option>`).join("")}</select></label><label>In<input id="teIn" type="datetime-local" value="${esc(toLocalInput(x.in))}"></label><label>Out<input id="teOut" type="datetime-local" value="${esc(toLocalInput(x.out))}"></label><label>Break minutes<input id="teBrk" type="number" min="0" step="5" value="${Math.round(x.isNew?30:brkMins(x))}"></label><label>Note for this task<input id="teNote" value="${esc(x.note||"")}"></label></div><label>Why (required; kept with the record)<input id="teWhy"></label><div class="actions"><button class="btn primary" type="button" data-tesave="1">Save</button><button class="btn" type="button" data-tecancel="1">Cancel</button></div></div>`}
+function tcEditForm(x){return `<div class="box stack" style="background:var(--bg)"><strong>${x.isNew?"Add time":"Fix time"}</strong><div class="fields"><label>Job<select id="teJob">${tcJobOptions(x.job,x.by)}</select></label><label>Cost code${codeField("teCode",x.code)}</label><label>Role<select id="teRole"><option value="">(none)</option>${ALL_ROLES.map(r=>`<option value="${r}" ${(x.isNew?(x.role||role()):x.role)===r?"selected":""}>${esc(ROLE_NAME[r])}</option>`).join("")}</select></label><label>In<input id="teIn" type="datetime-local" value="${esc(toLocalInput(x.in))}"></label><label>Out<input id="teOut" type="datetime-local" value="${esc(toLocalInput(x.out))}"></label><label>Break minutes<input id="teBrk" type="number" min="0" step="5" value="${Math.round(x.isNew?30:brkMins(x))}"></label><label>Note for this task<input id="teNote" value="${esc(x.note||"")}"></label></div><label>Why (required; kept with the record)<input id="teWhy"></label><div class="actions"><button class="btn primary" type="button" data-tesave="1">Save</button><button class="btn" type="button" data-tecancel="1">Cancel</button>${!x.isNew&&tcCanDel(x)?`<button class="btn warn" type="button" data-tedel="1" style="margin-left:auto">Delete this entry</button>`:""}</div>${!x.isNew&&tcCanDel(x)?`<p class="note" style="margin:0">Delete removes the whole entry from the time card and payroll. The reason above is kept in the deleted-time record.</p>`:""}</div>`}
+function tcCanDel(t){return canOffice()||(t.by===myId()&&t.status!=="approved")}
+async function delTime(t,why){const rec={entry:JSON.parse(JSON.stringify(t)),by:myId(),at:now(),why};
+ if(mode==="shared"){const k="timeclock/"+t.id;pendStart(k);try{await db.doc(k).delete()}catch(e){pendEnd(k);toast("Couldn't delete. Check your access and try again.");return false}pendEnd(k);try{await db.doc("timedel/"+t.id).set(rec)}catch(e){}}
+ tclock=tclock.filter(x=>x.id!==t.id);
+ if(mode!=="shared"){try{localStorage.setItem(LKEY+"-timeclock",JSON.stringify(tclock));const D=JSON.parse(localStorage.getItem(LKEY+"-timedel")||"[]");D.push(rec);localStorage.setItem(LKEY+"-timedel",JSON.stringify(D.slice(-500)))}catch(x){}}
+ return true}
 function tsApproval(ws,we){const wk=tclock.filter(t=>tDay(t)>=ws&&tDay(t)<=we),people=[...new Set(wk.map(t=>t.by))];wantNames(people);
  return `<div class="box stack" style="margin-top:12px"><div class="actions" style="justify-content:space-between"><h3 style="margin:0">Timesheets to approve</h3><span class="actions"><button class="btn small" type="button" data-rppreset="day|person">Daily hours</button><button class="btn small" type="button" data-rppreset="person|job">Employee summary</button><button class="btn small" type="button" data-rppreset="job|person">Project summary</button><button class="btn small" type="button" data-go="reports2">All reports</button><button class="btn small" type="button" data-tcexport="${esc(ws)}">Payroll spreadsheet for this week</button></span></div>
  ${people.length?`<div class="tablewrap"><table><thead><tr><th>Person</th><th class="num">Hours</th><th class="num">Overtime</th><th>Status</th><th>Flags</th><th></th></tr></thead><tbody>${people.map(p=>{const L=wk.filter(t=>t.by===p),C=weekCalc(L),st=L.every(t=>t.status==="approved")?"Approved":L.every(t=>t.status==="submitted"||t.status==="approved")?"Submitted":"Open",fl=[...new Set(L.flatMap(tcFlags))];
@@ -1979,6 +2000,9 @@ document.addEventListener("click",async ev=>{const X=q=>ev.target.closest(q);let
  if(b=X("[data-tcedit]")){const t=tclock.find(x=>x.id===b.dataset.tcedit);if(t){window._tcEdit=JSON.parse(JSON.stringify(t));renderScreen()}return}
  if(X("[data-tcadd]")){const d=ldate();window._tcEdit={id:newId("T"),by:uid,job:window._tcLastJob||"",code:"",in:new Date(d+"T07:00:00").toISOString(),out:new Date(d+"T15:30:00").toISOString(),breaks:[],status:"open",edits:[],manual:true,isNew:true};renderScreen();return}
  if(X("[data-tecancel]")){window._tcEdit=null;renderScreen();return}
+ if(b=X("[data-tedel]")){const x=window._tcEdit;if(!x)return;const t=tclock.find(t=>t.id===x.id);if(!t||!tcCanDel(t))return;const why=$("#teWhy").value.trim();if(!why){toast("Say why you're deleting it, so the record holds up");$("#teWhy").focus();return}
+  if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent=`Tap again to delete ${hm(tcMins(t))} on ${dayName(tDay(t))}`;return}
+  if(await delTime(t,why)){window._tcEdit=null;renderScreen();toast("Time entry deleted")}return}
  if(X("[data-tesave]")){const x=window._tcEdit;if(!x)return;const why=$("#teWhy").value.trim();if(!why){toast("Say why, so the record holds up");return}
   const inV=$("#teIn").value,outV=$("#teOut").value;if(!inV||!outV||outV<=inV){toast("Out must be after in");return}
   const before={in:x.in,out:x.out,job:x.job,code:x.code,role:x.role||"",brk:Math.round(brkMins(x))},iso=v=>new Date(v).toISOString(),bm=+$("#teBrk").value||0;
@@ -3750,7 +3774,7 @@ const renderDetail=()=>renderScreen();
 function launchClock(){if(window._tcAsked)return;if(mode==="shared"&&!(window._tcLoaded&&me.ready&&teamLoaded))return;if(mode!=="shared"&&mode!=="local")return;window._tcAsked=1;if(!canField()||tcOpen(myId())||screen!=="home")return;window._tcLaunch=1;screen="time"}
 function clockChip(){const c=document.getElementById("clockChip");if(!c)return;if(!canField()||(mode==="shared"&&!window._tcLoaded)){c.hidden=true;return}const o=tcOpen(myId());c.hidden=false;
  c.className="badge clk "+(o?(onBreak(o)?"sample":"live"):"sample");c.textContent=o?`${onBreak(o)?"On break":"On the clock"} · ${jkLabel(o.job)}${o.code?" · "+o.code:""}`:"Not clocked in · tap to clock in"}
-const APP_VERSION="114",APP_DATE="Nov 10, 2026";
+const APP_VERSION="115",APP_DATE="Nov 11, 2026";
 function verStamp(){const el=document.getElementById("appVer");if(el)el.textContent=`App version ${APP_VERSION} · ${APP_DATE} · ${window._selfHost?"company server":mode==="shared"?"claude.ai":"this browser"}`}
 function renderScreen(){launchClock();verStamp();setTimeout(clockChip,0);
  applyTabs();
@@ -4252,7 +4276,7 @@ applyRoles();
  document.addEventListener("focusin",ev=>{if(mq.matches&&ev.target.matches&&ev.target.matches("input:not([type=checkbox]):not([type=radio]):not([type=file]),textarea,select"))document.body.classList.add("kb")});
  document.addEventListener("focusout",()=>{setTimeout(()=>{const a=document.activeElement;if(!(a&&a.matches&&a.matches("input,textarea,select")))document.body.classList.remove("kb")},150)});
 })();
-renderBook();boot();
+renderBook();boot().then(()=>{try{tryResume()}catch(x){}});
 
 document.addEventListener("click",async ev=>{const X=q=>ev.target.closest(q);let b;
  if(b=X("[data-opencust]")){window._cuid=b.dataset.opencust;go("cust1");return}
