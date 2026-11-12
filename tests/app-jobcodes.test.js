@@ -73,3 +73,60 @@ test('estimators pick cost code groups on the estimate; they carry to the won jo
   assert.deepStrictEqual(app.errors, []);
   await app.close();
 });
+
+test('add a cost code free-style into a group; HDC Makeover group is there; groups editor ticks codes', async () => {
+  const app = await openApp({ role: 'office' });
+  const p = app.page;
+  await p.waitForTimeout(1800);
+  assert.ok(await p.evaluate(() => profiles().some(g => g.name === 'HDC Makeover')), 'HDC Makeover group seeded');
+  const id = await mkJob(p, { channel: 20 });
+  await p.waitForTimeout(200);
+  const box = p.locator(`[data-cbox="job|${id}"]`);
+  await box.locator('[data-cndet] summary').click();
+  await box.locator('#cnCode').fill('105'); await box.locator('#cnName').fill('Door and drawer fronts');
+  await box.locator('#cnGroup').selectOption('HDC Makeover');
+  await box.locator('[data-cnew]').click(); await p.waitForTimeout(300);
+  assert.ok(await p.evaluate(() => CODES().some(c => c.code === '105' && c.name === 'Door and drawer fronts')));
+  assert.ok(await p.evaluate(() => profiles().find(g => g.name === 'HDC Makeover').codes.includes('105')));
+  // new code with no group lands on this job only
+  await p.locator(`[data-cbox="job|${id}"] [data-cndet] summary`).click().catch(() => {});
+  const b2 = p.locator(`[data-cbox="job|${id}"]`);
+  if (!(await b2.locator('#cnCode').isVisible())) await b2.locator('[data-cndet] summary').click();
+  await b2.locator('#cnCode').fill('106'); await b2.locator('#cnName').fill('Hardware'); await b2.locator('#cnGroup').selectOption('');
+  await b2.locator('[data-cnew]').click(); await p.waitForTimeout(300);
+  assert.ok((await codesOf(p, id)).includes('106'), 'ungrouped new code ticked on this job');
+  // tick the HDC group on the job: crew sees its codes including 105
+  await p.locator(`[data-cbox="job|${id}"] [data-cg="HDC Makeover"]`).check(); await p.waitForTimeout(300);
+  assert.ok((await codesOf(p, id)).includes('105'));
+  // groups editor in settings
+  await p.evaluate(() => { document.querySelector('#screen').innerHTML = groupsHtml(); });
+  await p.locator('#screen [data-grpdet="HDC Makeover"] > summary').click();
+  await p.locator('#screen [data-grpn="HDC Makeover"][data-grpc="110"]').check(); await p.waitForTimeout(250);
+  assert.ok(await p.evaluate(() => profiles().find(g => g.name === 'HDC Makeover').codes.includes('110')));
+  assert.deepStrictEqual(app.errors, []);
+  await app.close();
+});
+
+test('groups load from the job description, limited to a program', async () => {
+  const app = await openApp({ role: 'office' });
+  const p = app.page;
+  await p.waitForTimeout(1800);
+  const a = await mkJob(p, { channel: 20, name: 'Kitchen cabinet makeover - Lopez' });
+  await p.waitForTimeout(200);
+  const S = await p.evaluate((id) => jobCodeSrc('job|' + id), a);
+  assert.equal(S.src, 'words'); assert.equal(S.label, 'HDC Makeover');
+  assert.match(await p.locator(`[data-cbox="job|${a}"]`).innerText(), /because the job says "makeover"/);
+  // limit HDC Makeover to channel 10 in the groups editor: a channel 20 job no longer matches
+  await p.evaluate(() => { document.querySelector('#screen').innerHTML = groupsHtml(); });
+  await p.locator('#screen [data-grpdet="HDC Makeover"] > summary').click();
+  await p.locator('#screen [data-grpn="HDC Makeover"][data-grpch="10"]').check(); await p.waitForTimeout(250);
+  assert.notEqual((await p.evaluate((id) => jobCodeSrc('job|' + id), a) || {}).src, 'words');
+  const b = await mkJob(p, { channel: 10, scope: 'HDC cabinet makeover, 22 doors' });
+  assert.equal(await p.evaluate((id) => jobCodeSrc('job|' + id).src, b), 'words');
+  // add a word
+  await p.evaluate(() => { document.querySelector('#screen').innerHTML = groupsHtml(); });
+  await p.evaluate(() => { const i = document.querySelector('#screen [data-grpw="HDC Makeover"]'); i.value = 'makeover, refacing'; i.dispatchEvent(new Event('change', { bubbles: true })); }); await p.waitForTimeout(250);
+  assert.deepStrictEqual(await p.evaluate(() => profiles().find(g => g.name === 'HDC Makeover').words), ['makeover', 'refacing']);
+  assert.deepStrictEqual(app.errors, []);
+  await app.close();
+});
